@@ -333,8 +333,8 @@
     wife/parents/status/divorced/.style={/couple/wife/parents/status drawing style=divorced style},
     % The following key has to be set by the \brother or \sister command to the value of the
     % counter NumberOfHusbandSiblings or NumberOfWifeSiblings depending on the value of the key "of"
-    sibling number to be used/.initial=0,
-}
+    sibling number to be used/.initial=0
+}%
 
 \pgfkeys{%
     /genogram/.is family, /genogram,
@@ -358,10 +358,9 @@
         broken couple symbol width/.initial=0.5ex,
         set keys with logic to default
     }
-}
+}%
 
 %============================================================%
-
 
 \newcommand{\husband}[1][]{%
     \pgfqkeys{/couple/husband}{#1}\ignorespaces
@@ -372,7 +371,7 @@
 }
 
 \newcommand{\child}[1][]{%
-    \stepcounter{NumberOfChildren}
+    \stepcounter{NumberOfChildren}%
     \pgfqkeys{/couple/last child}{default,#1}\ignorespaces
 }
 
@@ -400,18 +399,18 @@
     \internal@checkOfValue%
     \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{husband}=0
         \if@husband@mother@set\else
-            \pgfkeys{/couple/mother/default}
+            \pgfkeys{/couple/mother/default}%
         \fi
         \if@husband@father@set\else
-            \pgfkeys{/couple/father/default}
+            \pgfkeys{/couple/father/default}%
         \fi
     \fi
     \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{wife}=0
         \if@wife@father@set\else
-            \pgfkeys{/couple/father/default}
+            \pgfkeys{/couple/father/default}%
         \fi
         \if@wife@mother@set\else
-            \pgfkeys{/couple/mother/default}
+            \pgfkeys{/couple/mother/default}%
         \fi
     \fi
     % About using a macro with key list in \pgfkeys: https://tex.stackexchange.com/q/479497/128737
@@ -433,10 +432,10 @@
     \pgfqkeysfiltered{/couple}{#1}%
     \internal@checkOfValue%
     \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{husband}=0
-        \stepcounter{NumberOfHusbandSiblings}
+        \stepcounter{NumberOfHusbandSiblings}%
         \pgfkeys{/couple/sibling number to be used=\theNumberOfHusbandSiblings}%
     \else
-        \stepcounter{NumberOfWifeSiblings}
+        \stepcounter{NumberOfWifeSiblings}%
         \pgfkeys{/couple/sibling number to be used=\theNumberOfWifeSiblings}%
     \fi
     \pgfkeysalsofrom{\remainingoptions}\ignorespaces
@@ -450,19 +449,9 @@
     \internal@sibling[#1]{sister}
 }
 
-
 \newcommand{\setBeforeDrawing}[1][]{%
     \@genogram@default@were@settrue%
     \pgfqkeys{/genogram}{default,#1}\ignorespaces
-}
-
-\newcommand{\missingParent}[3]{%
-    \PackageError{Genogram}{%
-        #1 of #2 not specified but\MessageBreak
-         needed since you specified #3%
-    }{%
-        Check your code and add the missing command!
-    }
 }
 
 \newcommand{\drawElement}[3][]{% #1=extra node options #2=key name, #3=prefix for node and additional coordinates
@@ -487,7 +476,7 @@
 
 \long\def\internal@extraTikzCode{}
 \newcommand{\addToTikzpicture}[1]{%
-    \long\def\internal@extraTikzCode{#1}
+    \long\def\internal@extraTikzCode{#1}\ignorespaces
 }
 
 \newcommand{\drawGenogram}[1][]{%
@@ -552,6 +541,3 @@
         \internal@extraTikzCode
     \end{tikzpicture}\ignorespaces
 }
-
-
-
