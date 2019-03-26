@@ -1,0 +1,544 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{genogram}[2019/03/22 v0.1 Package to simply draw simple genograms]
+
+\RequirePackage{tikz}
+
+\usetikzlibrary{%
+    shapes.geometric,     %for square
+    positioning,          %for 'right = xxx of'
+    calc,                 %for coordinate calculations
+    backgrounds,          %for framed tikzpictures
+    decorations.markings  %for separated and divorced styles
+}
+
+%============================================================%
+% The idea is to create commands to gather from the user
+% all the needed information for the final \drawGenogram
+% command, where then the tikz pikture is drawn. The key
+% tree is structured in a way such that the top level
+% refers to the couple and sub-levels refer to the
+% correspondent relatives.
+%
+% The prefix gen@ is used to emulate a "genogram" namespace.
+%
+% Some more keys are needed for some fine-tuning or at least
+% to store defaults of drawn elements in the genogram.
+%============================================================%
+
+%============================================================%
+\newlength{\twoDigitsNumberWidth}
+\settowidth{\twoDigitsNumberWidth}{00}
+\tikzset{%
+    Square/.style={%
+        inner sep=\pgfkeysvalueof{/genogram/space around age},
+        regular polygon, regular polygon sides=4,
+        node contents={\makebox[\twoDigitsNumberWidth]{#1}}
+    },
+    Circle/.style={%
+        circle,
+        inner sep=\pgfkeysvalueof{/genogram/space around age},
+        /utils/exec={%
+            \pgfmathsetmacro\polygonIncircleDiameter{
+                sqrt(2)*max(\twoDigitsNumberWidth+2*\pgfshapeinnerxsep, height("#1") + depth("#1") + 2 * \pgfshapeinnerysep)
+            }
+        },
+        minimum size=\polygonIncircleDiameter,
+        node contents={\makebox[\twoDigitsNumberWidth]{#1}}
+    },
+    add coordinates above and below/.style={
+        append after command={%
+            \pgfextra{%
+                \coordinate (\tikzlastnode @above) at ($(\tikzlastnode.center)+(0,\pgfkeysvalueof{/genogram/generation distance}/2)$);
+                \coordinate (\tikzlastnode @below) at ($(\tikzlastnode.center)-(0,\pgfkeysvalueof{/genogram/generation distance}/2)$);
+            }
+        }
+    },
+    male/.style={draw, Square=#1, add coordinates above and below},
+    female/.style={draw, Circle=#1, add coordinates above and below},
+    shorter/.style={shorten >= #1, shorten <= #1},
+    alive/.style={}, %nothing to change
+    dead/.style={opacity=0.5,
+        append after command={%
+            \pgfextra{%
+                \draw[very thin, shorter=0.3pt] (\tikzlastnode.south west) -- (\tikzlastnode.north east);
+                \draw[very thin, shorter=0.3pt] (\tikzlastnode.south east) -- (\tikzlastnode.north west);
+            }
+        }
+    },
+    married style/.style={}, %nothing to change, simple line
+    not married style/.style={dashed},
+    separated style/.style={
+        postaction={
+            decorate,decoration={
+                markings,
+                mark=at position .5 with {
+                    \node[inner xsep=\pgfkeysvalueof{/genogram/broken couple symbol width},
+                          inner ysep=\pgfkeysvalueof{/genogram/broken couple symbol height}, append after command={
+                        \pgfextra{%
+                            \draw[thick] (\tikzlastnode.south west) -- (\tikzlastnode.north east);
+                        }
+                    }]{};
+                }
+            }
+        }
+    },
+    divorced style/.style={
+        postaction={
+            decorate,decoration={
+                markings,
+                mark=at position .5 with {
+                    \node[inner xsep=\pgfkeysvalueof{/genogram/broken couple symbol width},
+                          inner ysep=\pgfkeysvalueof{/genogram/broken couple symbol height}, append after command={
+                        \pgfextra{%
+                            \draw[thick] (\tikzlastnode.south west) -- (\tikzlastnode.north east)
+                                         (\tikzlastnode.south east) -- (\tikzlastnode.north west);
+                        }
+                    }]{};
+                }
+            }
+        }
+    }
+}
+
+\pgfkeysdef{/handlers/.value}{%
+    \pgfkeysvalueof{\pgfkeyscurrentpath}%
+}
+
+%============================================================%
+\newcounter{NumberOfChildren}
+\newcounter{NumberOfHusbandSiblings}
+\newcounter{NumberOfWifeSiblings}
+\newif\if@husband@father@set
+\newif\if@husband@mother@set
+\newif\if@wife@father@set
+\newif\if@wife@mother@set
+\newif\if@genogram@default@were@set
+\@genogram@default@were@setfalse
+%============================================================%
+
+%============================================================%
+\pgfkeys{%
+    /couple/.is family, /couple,
+    %---------------------------------------------------------------------------------
+    husband/default/.style={%
+        /couple/husband/.cd,
+        sex/.initial=male,
+        life status/.initial=alive,
+        age/.initial={},
+        age/.value required,
+        name/.initial={},
+        name/.value required,
+        extra node/.style={},
+        extra label/.style={},
+        /couple
+    },
+    husband/status/.style={/couple/status=#1},
+    husband/male/.style={/couple/husband/sex=male},      % for completeness
+    husband/male/.value forbidden,
+    husband/female/.style={/couple/husband/sex=female},  % for completeness
+    husband/female/.value forbidden,
+    husband/dead/.style={/couple/husband/life status=dead},
+    husband/dead/.value forbidden,
+    husband/extra node feature/.style={/couple/husband/extra node/.style={#1}},
+    husband/extra label feature/.style={/couple/husband/extra label/.style={#1}},
+    husband/default,
+    %---------------------------------------------------------------------------------
+    wife/default/.style={%
+        /couple/wife/.cd,
+        sex/.initial=female,
+        life status/.initial=alive,
+        age/.initial={},
+        age/.value required,
+        name/.initial={},
+        name/.value required,
+        extra node/.style={},
+        extra label/.style={},
+        /couple
+    },
+    wife/status/.style={/couple/status=#1},
+    wife/male/.style={/couple/wife/sex=male},      % for completeness
+    wife/male/.value forbidden,
+    wife/female/.style={/couple/wife/sex=female},  % for completeness
+    wife/female/.value forbidden,
+    wife/dead/.style={/couple/wife/life status=dead},
+    wife/dead/.value forbidden,
+    wife/extra node feature/.style={/couple/wife/extra node/.style={#1}},
+    wife/extra label feature/.style={/couple/wife/extra label/.style={#1}},
+    wife/default,
+    %---------------------------------------------------------------------------------
+    last child/default/.style={%
+        /couple/child\theNumberOfChildren/.cd,
+        life status/.initial=alive,
+        age/.initial={},
+        name/.initial={},
+        sex/.initial=male,
+        extra node/.style={},
+        extra label/.style={},
+        /couple/last child/.cd % This is called by EVERY \child and it has to change back to /couple/last child
+        % NOTE: The default must be in \child and not here since the counter change at every time a default must be invoked!
+    },
+    last child/age/.value required,
+    last child/age/.style={/couple/child\theNumberOfChildren/age=#1},
+    last child/name/.value required,
+    last child/name/.style={/couple/child\theNumberOfChildren/name=#1},
+    last child/male/.style={/couple/child\theNumberOfChildren/sex=male},
+    last child/male/.value forbidden,
+    last child/female/.style={/couple/child\theNumberOfChildren/sex=female},
+    last child/female/.value forbidden,
+    last child/dead/.style={/couple/child\theNumberOfChildren/life status=dead},
+    last child/dead/.value forbidden,
+    last child/extra node feature/.style={/couple/child\theNumberOfChildren/extra node/.style={#1}},
+    last child/extra label feature/.style={/couple/child\theNumberOfChildren/extra label/.style={#1}},
+    %---------------------------------------------------------------------------------
+    % Key of in order to understand relationships
+    of/.initial=husband,
+    of/.belongs to family=/couple, % In order to use \pgfqkeysfiltered
+    of/.value required,
+    %---------------------------------------------------------------------------------
+    father/default/.style={%
+        /couple/\pgfkeysvalueof{/couple/of}/father=true, % connected to \if@...@father@set
+        /couple/\pgfkeysvalueof{/couple/of}/father/.cd,
+        life status/.initial=alive,
+        age/.initial={},
+        name/.initial={},
+        sex/.initial=male,
+        extra node/.style={},
+        extra label/.style={},
+        /couple/father/.cd % This is called by EVERY \father and it has to change back to /couple/father
+    },
+    father/status/.style={/couple/\pgfkeysvalueof{/couple/of}/parents/status=#1},
+    father/age/.value required,
+    father/age/.style={/couple/\pgfkeysvalueof{/couple/of}/father/age=#1},
+    father/name/.value required,
+    father/name/.style={/couple/\pgfkeysvalueof{/couple/of}/father/name=#1},
+    father/male/.style={/couple/\pgfkeysvalueof{/couple/of}/father/sex=male},      % for completeness
+    father/male/.value forbidden,
+    father/female/.style={/couple/\pgfkeysvalueof{/couple/of}/father/sex=female},  % for completeness
+    father/female/.value forbidden,
+    father/dead/.style={/couple/\pgfkeysvalueof{/couple/of}/father/life status=dead},
+    father/dead/.value forbidden,
+    father/extra node feature/.style={/couple/\pgfkeysvalueof{/couple/of}/father/extra node/.style={#1}},
+    father/extra label feature/.style={/couple/\pgfkeysvalueof{/couple/of}/father/extra label/.style={#1}},
+    %---------------------------------------------------------------------------------
+    mother/default/.style={%
+        /couple/\pgfkeysvalueof{/couple/of}/mother=true,  % connected to \if@...@mother@set
+        /couple/\pgfkeysvalueof{/couple/of}/mother/.cd,
+        life status/.initial=alive,
+        age/.initial={},
+        name/.initial={},
+        sex/.initial=female,
+        extra node/.style={},
+        extra label/.style={},
+        /couple/mother/.cd % This is called by EVERY \mother and it has to change back to /couple/mother
+    },
+    mother/status/.style={/couple/\pgfkeysvalueof{/couple/of}/parents/status=#1},
+    mother/age/.value required,
+    mother/age/.style={/couple/\pgfkeysvalueof{/couple/of}/mother/age=#1},
+    mother/name/.value required,
+    mother/name/.style={/couple/\pgfkeysvalueof{/couple/of}/mother/name=#1},
+    mother/male/.style={/couple/\pgfkeysvalueof{/couple/of}/mother/sex=male},      % for completeness
+    mother/male/.value forbidden,
+    mother/female/.style={/couple/\pgfkeysvalueof{/couple/of}/mother/sex=female},  % for completeness
+    mother/female/.value forbidden,
+    mother/dead/.style={/couple/\pgfkeysvalueof{/couple/of}/mother/life status=dead},
+    mother/dead/.value forbidden,
+    mother/extra node feature/.style={/couple/\pgfkeysvalueof{/couple/of}/mother/extra node/.style={#1}},
+    mother/extra label feature/.style={/couple/\pgfkeysvalueof{/couple/of}/mother/extra label/.style={#1}},
+    %---------------------------------------------------------------------------------
+    brother/default/.style={%
+        /couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/.cd,
+        life status/.initial=alive,
+        age/.initial={},
+        name/.initial={},
+        sex/.initial=male,
+        extra node/.style={},
+        extra label/.style={},
+        /couple/brother/.cd % This is called by EVERY \brother and it has to change back to /couple/brother
+    },
+    brother/age/.value required,
+    brother/age/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/age=#1},
+    brother/name/.value required,
+    brother/name/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/name=#1},
+    brother/male/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/sex=male},      % for completeness
+    brother/male/.value forbidden,
+    brother/female/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/sex=female},  % for completeness
+    brother/female/.value forbidden,
+    brother/dead/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/life status=dead},
+    brother/dead/.value forbidden,
+    brother/extra node feature/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/extra node/.style={#1}},
+    brother/extra label feature/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/extra label/.style={#1}},
+    %---------------------------------------------------------------------------------
+    sister/default/.style={%
+        /couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/.cd,
+        life status/.initial=alive,
+        age/.initial={},
+        name/.initial={},
+        sex/.initial=female,
+        extra node/.style={},
+        extra label/.style={},
+        /couple/sister/.cd % This is called by EVERY \brother and it has to change back to /couple/brother
+    },
+    sister/age/.value required,
+    sister/age/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/age=#1},
+    sister/name/.value required,
+    sister/name/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/name=#1},
+    sister/male/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/sex=male},      % for completeness
+    sister/male/.value forbidden,
+    sister/female/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/sex=female},  % for completeness
+    sister/female/.value forbidden,
+    sister/dead/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/life status=dead},
+    sister/dead/.value forbidden,
+    sister/extra node feature/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/extra node/.style={#1}},
+    sister/extra label feature/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/extra label/.style={#1}},
+    %---------------------------------------------------------------------------------
+    %=================== INTERNAL KEYS NOT THOUGHT FOR THE USER ======================
+    husband/father/.is if=@husband@father@set,
+    husband/father/.initial=false,
+    husband/mother/.is if=@husband@mother@set,
+    husband/mother/.initial=false,
+    wife/father/.is if=@wife@father@set,
+    wife/father/.initial=false,
+    wife/mother/.is if=@wife@mother@set,
+    wife/mother/.initial=false,
+    status drawing style/.initial={married style},
+    status/.is choice,
+    status/married/.style={/couple/status drawing style=married style},
+    status/not married/.style={/couple/status drawing style=not married style},
+    status/separated/.style={/couple/status drawing style=separated style},
+    status/divorced/.style={/couple/status drawing style=divorced style},
+    husband/parents/status drawing style/.initial={married style},
+    husband/parents/status/.is choice,
+    husband/parents/status/married/.style={/couple/husband/parents/status drawing style=married style},
+    husband/parents/status/not married/.style={/couple/husband/parents/status drawing style=not married style},
+    husband/parents/status/separated/.style={/couple/husband/parents/status drawing style=separated style},
+    husband/parents/status/divorced/.style={/couple/husband/parents/status drawing style=divorced style},
+    wife/parents/status drawing style/.initial={married style},
+    wife/parents/status/.is choice,
+    wife/parents/status/married/.style={/couple/wife/parents/status drawing style=married style},
+    wife/parents/status/not married/.style={/couple/wife/parents/status drawing style=not married style},
+    wife/parents/status/separated/.style={/couple/wife/parents/status drawing style=separated style},
+    wife/parents/status/divorced/.style={/couple/wife/parents/status drawing style=divorced style},
+    % The following key has to be set by the \brother or \sister command to the value of the
+    % counter NumberOfHusbandSiblings or NumberOfWifeSiblings depending on the value of the key "of"
+    sibling number to be used/.initial=0,
+}
+
+\pgfkeys{%
+    /genogram/.is family, /genogram,
+    set keys with logic to default/.code={%
+        \ifnum\value{NumberOfChildren}=0
+            \pgfmathparse{10*(1+\theNumberOfChildren)}%
+        \else
+            \pgfmathparse{5*(1+\theNumberOfChildren)}%
+        \fi
+        \pgfkeysalso{couple distance/.initial/.expanded={\pgfmathresult em}}%
+        \pgfmathparse{5*(1+\theNumberOfHusbandSiblings)}%
+        \pgfkeysalso{husband parents distance/.initial/.expanded={\pgfmathresult em}}%
+        \pgfmathparse{5*(1+\theNumberOfWifeSiblings)}%
+        \pgfkeysalso{wife parents distance/.initial/.expanded={\pgfmathresult em}}%
+    },
+    default/.style={%
+        /genogram,
+        /genogram/space around age/.initial=1pt,
+        generation distance/.initial=3cm,
+        broken couple symbol height/.initial=1ex,
+        broken couple symbol width/.initial=0.5ex,
+        set keys with logic to default
+    }
+}
+
+%============================================================%
+
+
+\newcommand{\husband}[1][]{%
+    \pgfqkeys{/couple/husband}{#1}\ignorespaces
+}
+
+\newcommand{\wife}[1][]{%
+    \pgfqkeys{/couple/wife}{#1}\ignorespaces
+}
+
+\newcommand{\child}[1][]{%
+    \stepcounter{NumberOfChildren}
+    \pgfqkeys{/couple/last child}{default,#1}\ignorespaces
+}
+
+\newcommand{\internal@checkOfValue}{%
+    % See https://ctan.org/pkg/pdftex?lang=de for \pdfstrcmp
+    \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{husband}=0
+    \else
+        \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{wife}=0
+        \else
+            \PackageError{Genogram}{%
+                Invalid value of key "of=\pgfkeysvalueof{/couple/of}"!\MessageBreak
+                Specify either "husband" or "wife"%
+            }{%
+                Specify either "husband" or "wife"%
+            }
+        \fi
+    \fi
+}
+
+\newcommand{\internal@parent}[2][]{%
+    \pgfkeys{/pgf/key filters/and/.install key filter={/pgf/key filters/defined}{/pgf/key filters/equals=/couple/of}}%
+    \pgfkeys{/pgf/key filter handlers/append filtered to/.install key filter handler=\remainingoptions}%
+    \def\remainingoptions{/couple/#2/.cd,default}% Prepare key list for later in \pgfkeysalsofrom
+    \pgfqkeysfiltered{/couple}{#1}%
+    \internal@checkOfValue%
+    \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{husband}=0
+        \if@husband@mother@set\else
+            \pgfkeys{/couple/mother/default}
+        \fi
+        \if@husband@father@set\else
+            \pgfkeys{/couple/father/default}
+        \fi
+    \fi
+    \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{wife}=0
+        \if@wife@father@set\else
+            \pgfkeys{/couple/father/default}
+        \fi
+        \if@wife@mother@set\else
+            \pgfkeys{/couple/mother/default}
+        \fi
+    \fi
+    % About using a macro with key list in \pgfkeys: https://tex.stackexchange.com/q/479497/128737
+    \pgfkeysalsofrom{\remainingoptions}\ignorespaces
+}
+
+\newcommand{\father}[1][]{%
+    \internal@parent[#1]{father}
+}
+
+\newcommand{\mother}[1][]{%
+    \internal@parent[#1]{mother}
+}
+
+\newcommand{\internal@sibling}[2][]{%
+    \pgfkeys{/pgf/key filters/and/.install key filter={/pgf/key filters/defined}{/pgf/key filters/equals=/couple/of}}%
+    \pgfkeys{/pgf/key filter handlers/append filtered to/.install key filter handler=\remainingoptions}%
+    \def\remainingoptions{/couple/#2/.cd,default}% Prepare key list for later in \pgfkeysalsofrom
+    \pgfqkeysfiltered{/couple}{#1}%
+    \internal@checkOfValue%
+    \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{husband}=0
+        \stepcounter{NumberOfHusbandSiblings}
+        \pgfkeys{/couple/sibling number to be used=\theNumberOfHusbandSiblings}%
+    \else
+        \stepcounter{NumberOfWifeSiblings}
+        \pgfkeys{/couple/sibling number to be used=\theNumberOfWifeSiblings}%
+    \fi
+    \pgfkeysalsofrom{\remainingoptions}\ignorespaces
+}
+
+\newcommand{\brother}[1][]{%
+    \internal@sibling[#1]{brother}
+}
+
+\newcommand{\sister}[1][]{%
+    \internal@sibling[#1]{sister}
+}
+
+
+\newcommand{\setBeforeDrawing}[1][]{%
+    \@genogram@default@were@settrue%
+    \pgfqkeys{/genogram}{default,#1}\ignorespaces
+}
+
+\newcommand{\missingParent}[3]{%
+    \PackageError{Genogram}{%
+        #1 of #2 not specified but\MessageBreak
+         needed since you specified #3%
+    }{%
+        Check your code and add the missing command!
+    }
+}
+
+\newcommand{\drawElement}[3][]{% #1=extra node options #2=key name, #3=prefix for node and additional coordinates
+    \filename@parse{#2}
+    \node[\pgfkeysvalueof{#2/sex}=\pgfkeysvalueof{#2/age}, name=#3\filename@base, \pgfkeysvalueof{#2/life status}, #2/extra node, #1];
+    \node[anchor=south west, inner sep=0, inner ysep=1pt, font=\scriptsize,
+          at={(#3\filename@base.north -| {$(#3\filename@base.center)!0.5!(#3\filename@base.east)$})}, #2/extra label] {\strut\pgfkeysvalueof{#2/name}};
+    % The complicated at abobe is to keep the same position of label no matter if the shape is square or circle (north, center and east anchors
+    % are the same and here we use the y coordinate of north and the x coortinate of the midpoint between center and east).
+}
+
+\long\def\ifNodeDefined#1#2{% https://tex.stackexchange.com/a/85531/128737
+    \@ifundefined{pgf@sh@ns@#1}{%
+        \PackageError{Genogram}{%
+            Logical error in drawing.\MessageBreak
+            Node #1 needed but not found.\MessageBreak
+            Please, check the order of your commands%
+        }{%
+            Check the order of your commands!
+        }}{#2}%
+}
+
+\long\def\internal@extraTikzCode{}
+\newcommand{\addToTikzpicture}[1]{%
+    \long\def\internal@extraTikzCode{#1}
+}
+
+\newcommand{\drawGenogram}[1][]{%
+%     \gen@checksBeforeDrawing%
+    \if@genogram@default@were@set\else\pgfkeys{/genogram/default}\fi%
+    \begin{tikzpicture}[framed]
+        \drawElement{/couple/husband}{gen@}
+        \drawElement[at={($(gen@husband.center)+(\pgfkeysvalueof{/genogram/couple distance},0)$)}]{/couple/wife}{gen@}
+        \draw[\pgfkeysvalueof{/couple/status drawing style}] (gen@husband.south) -- (gen@husband@below) -- (gen@wife@below) -- (gen@wife.south);
+        %Draw children if some (husband and wife nodes always exist because of default values!)
+        \ifnum\value{NumberOfChildren}>0%
+            \foreach \n in {1,...,\theNumberOfChildren}{
+                \coordinate (tmp) at ($(gen@husband@below)!{(-0.5+\n)/\theNumberOfChildren}!(gen@wife@below)-(0,\pgfkeysvalueof{/genogram/generation distance}/2)$);
+                \drawElement[at=(tmp)]{/couple/child\n}{gen@}
+                \draw (gen@child\n.north) -- (gen@child\n @above);
+            }
+        \fi
+        %Preliminary calculation to place parents and be ready to draw siblings
+        \pgfmathsetlengthmacro{\xshiftHusbandParents}{\pgfkeysvalueof{/genogram/husband parents distance}/(\theNumberOfHusbandSiblings+1)/2}
+        \pgfmathsetlengthmacro{\xshiftWifeParents}{\pgfkeysvalueof{/genogram/wife parents distance}/(\theNumberOfWifeSiblings+1)/2}
+        %Draw parents of husband assuming as it should be that if one is defined, both are (see \internal@parent command)
+        \if@husband@mother@set
+            \drawElement[at={($(gen@husband@above)+(\xshiftHusbandParents,\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/husband/mother}{gen@husband@}
+            \drawElement[at={($(gen@husband@mother)-(\pgfkeysvalueof{/genogram/husband parents distance},0)$)}]{/couple/husband/father}{gen@husband@}
+            \draw[\pgfkeysvalueof{/couple/husband/parents/status drawing style}] (gen@husband@father.south) -- (gen@husband@father@below) -- (gen@husband@mother@below) -- (gen@husband@mother.south);
+            \draw (gen@husband) -- (gen@husband@above);
+        \fi
+        %Draw parents of wife assuming as it should be that if one is defined, both are (see \internal@parent command)
+        \if@wife@mother@set
+            \drawElement[at={($(gen@wife@above)+(-\xshiftWifeParents,\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/wife/father}{gen@wife@}
+            \drawElement[at={($(gen@wife@father)+(\pgfkeysvalueof{/genogram/wife parents distance},0)$)}]{/couple/wife/mother}{gen@wife@}
+            \draw[\pgfkeysvalueof{/couple/wife/parents/status drawing style}] (gen@wife@father.south) -- (gen@wife@father@below) -- (gen@wife@mother@below) -- (gen@wife@mother.south);
+            \draw (gen@wife) -- (gen@wife@above);
+        \fi
+        %Draw siblings if some (left of husband and right of wife)
+        \ifnum\value{NumberOfHusbandSiblings}>0%
+            \pgfmathsetlengthmacro{\husbandSiblingsDistance}{\pgfkeysvalueof{/genogram/husband parents distance}/(\theNumberOfHusbandSiblings+1)}
+            \foreach \n in {1,...,\theNumberOfHusbandSiblings}{
+                \drawElement[at={($(gen@husband)-(\n*\husbandSiblingsDistance,0)$)}]{/couple/husband/sibling\n}{gen@husband@}
+                \draw (gen@husband@sibling\n.north) -- (gen@husband@sibling\n @above);
+            }
+        \fi
+        \ifnum\value{NumberOfWifeSiblings}>0%
+            \pgfmathsetlengthmacro{\wifeSiblingsDistance}{\pgfkeysvalueof{/genogram/wife parents distance}/(\theNumberOfWifeSiblings+1)}
+            \foreach \n in {1,...,\theNumberOfWifeSiblings}{
+                \drawElement[at={($(gen@wife)+(\n*\wifeSiblingsDistance,0)$)}]{/couple/wife/sibling\n}{gen@wife@}
+                \draw (gen@wife@sibling\n.north) -- (gen@wife@sibling\n @above);
+            }
+        \fi
+        %Connect husband and/or wife to siblings in case no parents have been specified and there are siblings
+        \ifnum\value{NumberOfHusbandSiblings}=0\else
+            \if@husband@mother@set\else %parents go together so just one if is OK
+                \draw (gen@husband) -- (gen@husband@above) -- (gen@husband@sibling\theNumberOfHusbandSiblings @above);
+            \fi
+        \fi
+        \ifnum\value{NumberOfWifeSiblings}=0\else
+            \if@wife@mother@set\else %parents go together so just one if is OK
+                \draw (gen@wife) -- (gen@wife@above) -- (gen@wife@sibling\theNumberOfWifeSiblings @above);
+            \fi
+        \fi
+        %Finish with whatever the user wishes
+        \internal@extraTikzCode
+    \end{tikzpicture}\ignorespaces
+}
+
+
+
