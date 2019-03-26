@@ -1,7 +1,6 @@
 \documentclass[svgnames,border=1mm, 11pt]{standalone}
 \usepackage{genogram}
 
-%\listfiles%
 \begin{document}
     \husband[
         name=Clark, age=30, status=not married,
@@ -53,7 +52,7 @@
         extra node feature={Navy, fill=Navy!10},
         extra label feature={text=Navy}
     ]
-    %\setBeforeDrawing[couple distance=10em]
+
     \addToTikzpicture{%
         \begin{scope}[every node/.style={inner sep=0, inner ysep=1mm, font=\ttfamily\tiny}]
             \node[text=red, anchor=north west] at (gen@husband.east) {
@@ -113,80 +112,3 @@
     }
     \drawGenogram
 \end{document}
-
-
-% \documentclass[tikz, border=1mm]{standalone}
-% \usetikzlibrary{shapes.geometric, calc}
-%
-% \newlength{\twoDigitsNumberWidth}
-% \settowidth{\twoDigitsNumberWidth}{00}
-%
-% \tikzset{%
-%     Square/.style={regular polygon, regular polygon sides=4, node contents={\makebox[\twoDigitsNumberWidth]{#1}}},
-%     Circle/.style={%
-%         circle,
-%         /utils/exec={%
-%             \pgfmathsetmacro\polygonIncircleDiameter{
-%                 sqrt(2)*max(\twoDigitsNumberWidth+2*\pgfshapeinnerxsep, height("#1") + depth("#1") + 2 * \pgfshapeinnerysep)
-%             }
-%         },
-%         minimum size=\polygonIncircleDiameter,
-%         node contents={\makebox[\twoDigitsNumberWidth]{#1}}
-%     }
-% }
-%
-% \newcommand{\extras}[1]{%
-%     \long\def\aPieceOfCode{#1}
-% }
-%
-% \newcommand{\drawTikz}{
-%     \begin{tikzpicture}{every node/.style={inner sep=1pt}}
-%         \node[Square={000}, draw=red, at={(0,0)}, name=a];
-%         \node[Circle={0}, draw=blue, at={(1,0)}, name=b];
-%         \node[anchor=south west, inner sep=0, inner ysep=1pt] at ($(a.north)!0.5!(a.north east)$) {xxx};
-%         \node[anchor=south west, inner sep=0, inner ysep=1pt] at (a.north -| {$(a.north)!0.5!(a.north east)$}) {xxx};
-%         \node[anchor=south west, inner sep=0, inner ysep=1pt] at ($(b.north)!0.5!(b.north east)$) {xxx};
-%         \node[anchor=south west, inner sep=0, inner ysep=1pt] at (b.north -| {$(b.north)!0.5!(b.north east)$}) {xxx};
-%         \aPieceOfCode
-%     \end{tikzpicture}
-% }
-%
-% \begin{document}
-%     \extras{%
-%         \node[Circle={3}, draw=orange, at={(2,0)}, name=c];
-%         \node[violet] at (b.south west) {s};
-%         \foreach \c in {0,1,2}{
-%             \node[yshift=2mm, font=\tiny] at(\c,0) {\c};
-%         }
-%     }
-%     \drawTikz
-% \end{document}
-
-
-
-
-% \documentclass[tikz, border=1mm]{standalone}
-% \usetikzlibrary{shapes.geometric}
-%
-% \tikzset{%
-%     Square/.style={regular polygon, regular polygon sides=4},
-%     Circle/.style={%
-%         circle,
-%         /utils/exec={%
-%             \pgfmathsetmacro\polygonIncircleRadius{
-%                 sqrt(2)*max(width("#1")+2*\pgfshapeinnerxsep, height("#1") + depth("#1") + 2 * \pgfshapeinnerysep)/2
-%             }
-%         },
-%         minimum size=2*\polygonIncircleRadius,
-%         node contents={#1}
-%     }
-% }
-%
-% \begin{document}
-%     \begin{tikzpicture}
-%         \node[inner sep=0, Square, draw=cyan] at (0,0) {xx};
-%         \node[inner sep=0, Circle={xx}, draw=blue];
-%         \node[Square, draw=cyan] at (1,0) {i};
-%         \node (c) at (1,0) [Circle={i}, draw=blue];
-%     \end{tikzpicture}
-% \end{document}
