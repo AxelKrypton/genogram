@@ -12,7 +12,7 @@
 % LaTeX version 2005/12/01 or later.
 %============================================================%
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{genogram}[2019/03/22 v1.0 Package to simply draw simple genograms]
+\ProvidesPackage{genogram}[2019/03/22 v1.0b Package to simply draw simple genograms]
 
 \RequirePackage{tikz}
 
@@ -118,9 +118,16 @@
 }
 
 %============================================================%
+%Counters for genogram people
 \newcounter{NumberOfChildren}
 \newcounter{NumberOfHusbandSiblings}
 \newcounter{NumberOfWifeSiblings}
+%Counters for drawing
+\newcounter{NumberOfHusbandPeopleToDraw}
+\setcounter{NumberOfHusbandPeopleToDraw}{1}%
+\newcounter{NumberOfWifePeopleToDraw}
+\setcounter{NumberOfWifePeopleToDraw}{1}%
+%If-clauses for some logic
 \newif\if@husband@father@set
 \newif\if@husband@mother@set
 \newif\if@wife@father@set
@@ -141,9 +148,10 @@
         age/.value required,
         name/.initial={},
         name/.value required,
+        after sibling/.initial/.expanded={\theNumberOfHusbandSiblings},
         extra node/.style={},
         extra label/.style={},
-        /couple
+        %Here remain in /couple/husband as needed by \husband command
     },
     husband/status/.style={/couple/status=#1},
     husband/male/.style={/couple/husband/sex=male},      % for completeness
@@ -154,7 +162,6 @@
     husband/dead/.value forbidden,
     husband/extra node feature/.style={/couple/husband/extra node/.style={#1}},
     husband/extra label feature/.style={/couple/husband/extra label/.style={#1}},
-    husband/default,
     %---------------------------------------------------------------------------------
     wife/default/.style={%
         /couple/wife/.cd,
@@ -164,9 +171,10 @@
         age/.value required,
         name/.initial={},
         name/.value required,
+        after sibling/.initial/.expanded={\theNumberOfWifeSiblings},
         extra node/.style={},
         extra label/.style={},
-        /couple
+        %Here remain in /couple/husband as needed by \husband command
     },
     wife/status/.style={/couple/status=#1},
     wife/male/.style={/couple/wife/sex=male},      % for completeness
@@ -177,7 +185,6 @@
     wife/dead/.value forbidden,
     wife/extra node feature/.style={/couple/wife/extra node/.style={#1}},
     wife/extra label feature/.style={/couple/wife/extra label/.style={#1}},
-    wife/default,
     %---------------------------------------------------------------------------------
     last child/default/.style={%
         /couple/child\theNumberOfChildren/.cd,
@@ -361,13 +368,17 @@
 }%
 
 %============================================================%
+%Just to consider the case the user does not use the
+%\husband and/or \wife commands -> set defaults to draw them!
+\pgfkeys{/couple/husband/default, /couple/wife/default}%
+%============================================================%
 
 \newcommand{\husband}[1][]{%
-    \pgfqkeys{/couple/husband}{#1}\ignorespaces
+    \pgfqkeys{/couple/husband}{default,#1}\ignorespaces
 }
 
 \newcommand{\wife}[1][]{%
-    \pgfqkeys{/couple/wife}{#1}\ignorespaces
+    \pgfqkeys{/couple/wife}{default,#1}\ignorespaces
 }
 
 \newcommand{\child}[1][]{%
@@ -433,9 +444,11 @@
     \internal@checkOfValue%
     \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{husband}=0
         \stepcounter{NumberOfHusbandSiblings}%
+        \stepcounter{NumberOfHusbandPeopleToDraw}%
         \pgfkeys{/couple/sibling number to be used=\theNumberOfHusbandSiblings}%
     \else
         \stepcounter{NumberOfWifeSiblings}%
+        \stepcounter{NumberOfWifePeopleToDraw}%
         \pgfkeys{/couple/sibling number to be used=\theNumberOfWifeSiblings}%
     \fi
     \pgfkeysalsofrom{\remainingoptions}\ignorespaces
@@ -461,6 +474,7 @@
           at={(#3\filename@base.north -| {$(#3\filename@base.center)!0.5!(#3\filename@base.east)$})}, #2/extra label] {\strut\pgfkeysvalueof{#2/name}};
     % The complicated at abobe is to keep the same position of label no matter if the shape is square or circle (north, center and east anchors
     % are the same and here we use the y coordinate of north and the x coortinate of the midpoint between center and east).
+    \coordinate (lastCoordinate) at (#3\filename@base.center);
 }
 
 \long\def\ifNodeDefined#1#2{% https://tex.stackexchange.com/a/85531/128737
@@ -480,11 +494,58 @@
 }
 
 \newcommand{\drawGenogram}[1][]{%
-%     \gen@checksBeforeDrawing%
     \if@genogram@default@were@set\else\pgfkeys{/genogram/default}\fi%
+    %Since we want to draw elements left to right in the genogram respecting the order in which they have been specified
+    %(age is usually decreasing left to right), then we draw first the couple generation, treating parent/wife and siblings
+    %together. Actually if siblings have partners they are also drawn here.
     \begin{tikzpicture}[framed]
-        \drawElement{/couple/husband}{gen@}
-        \drawElement[at={($(gen@husband.center)+(\pgfkeysvalueof{/genogram/couple distance},0)$)}]{/couple/wife}{gen@}
+        %Draw husband with his siblings plus in case brother/sister in law
+        \pgfmathsetlengthmacro{\husbandPeopleDistance}{\pgfkeysvalueof{/genogram/husband parents distance}/(\theNumberOfHusbandPeopleToDraw)}
+        \path coordinate (firstHusbandPerson) at (0,0)
+              coordinate (lastCoordinate) at (firstHusbandPerson);
+        \ifnum\value{NumberOfHusbandSiblings}>0%
+            \ifnum\pgfkeysvalueof{/couple/husband/after sibling}=0
+                \drawElement[at=(lastCoordinate)]{/couple/husband}{gen@}
+            \else
+                %Correct last coordinate by the increment by \wifePeopleDistance in order to have
+                %the correct distance between the husband and wife people
+                \coordinate (lastCoordinate) at ($(lastCoordinate)-(\husbandPeopleDistance,0)$);
+            \fi
+            \foreach \n in {1,...,\theNumberOfHusbandSiblings}{
+                \drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n}{gen@husband@}
+                \ifnum\pgfkeysvalueof{/couple/husband/after sibling}=\n
+                    \drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband}{gen@}
+                \fi
+                \draw (gen@husband@sibling\n.north) -- (gen@husband@sibling\n @above);
+            }
+        \else
+            \drawElement[at=(lastCoordinate)]{/couple/husband}{gen@}
+        \fi
+        \coordinate (lastHusbandPerson) at (lastCoordinate);
+        %Draw wife with her siblings plus in case brother/sister in law
+        \pgfmathsetlengthmacro{\wifePeopleDistance}{\pgfkeysvalueof{/genogram/wife parents distance}/(\theNumberOfWifePeopleToDraw)}
+        \path coordinate (lastCoordinate) at ($(lastCoordinate)+(\pgfkeysvalueof{/genogram/couple distance},0)$)
+              coordinate (firstWifePerson) at (lastCoordinate);
+        \ifnum\value{NumberOfWifeSiblings}>0%
+            \ifnum\pgfkeysvalueof{/couple/wife/after sibling}=0
+                \drawElement[at=(lastCoordinate)]{/couple/wife}{gen@}
+            \else
+                %Correct last coordinate by the increment by \wifePeopleDistance in order to have
+                %the correct distance between the husband and wife people
+                \coordinate (lastCoordinate) at ($(lastCoordinate)-(\wifePeopleDistance,0)$);
+            \fi
+            \foreach \n in {1,...,\theNumberOfWifeSiblings}{
+                \drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n}{gen@wife@}
+                \ifnum\pgfkeysvalueof{/couple/wife/after sibling}=\n
+                    \drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife}{gen@}
+                \fi
+                \draw (gen@wife@sibling\n.north) -- (gen@wife@sibling\n @above);
+            }
+        \else
+            \drawElement[at=(lastCoordinate)]{/couple/wife}{gen@}
+        \fi
+        \coordinate (lastWifePerson) at (lastCoordinate);
+        %Now that the couple has been drawn, connect it
         \draw[\pgfkeysvalueof{/couple/status drawing style}] (gen@husband.south) -- (gen@husband@below) -- (gen@wife@below) -- (gen@wife.south);
         %Draw children if some (husband and wife nodes always exist because of default values!)
         \ifnum\value{NumberOfChildren}>0%
@@ -494,47 +555,31 @@
                 \draw (gen@child\n.north) -- (gen@child\n @above);
             }
         \fi
-        %Preliminary calculation to place parents and be ready to draw siblings
-        \pgfmathsetlengthmacro{\xshiftHusbandParents}{\pgfkeysvalueof{/genogram/husband parents distance}/(\theNumberOfHusbandSiblings+1)/2}
-        \pgfmathsetlengthmacro{\xshiftWifeParents}{\pgfkeysvalueof{/genogram/wife parents distance}/(\theNumberOfWifeSiblings+1)/2}
         %Draw parents of husband assuming as it should be that if one is defined, both are (see \internal@parent command)
         \if@husband@mother@set
-            \drawElement[at={($(gen@husband@above)+(\xshiftHusbandParents,\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/husband/mother}{gen@husband@}
-            \drawElement[at={($(gen@husband@mother)-(\pgfkeysvalueof{/genogram/husband parents distance},0)$)}]{/couple/husband/father}{gen@husband@}
+            \drawElement[at={($(gen@husband@above -| firstHusbandPerson)+(-\husbandPeopleDistance/2,\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/husband/father}{gen@husband@}
+            \drawElement[at={($(gen@husband@father)+(\pgfkeysvalueof{/genogram/husband parents distance},0)$)}]{/couple/husband/mother}{gen@husband@}
             \draw[\pgfkeysvalueof{/couple/husband/parents/status drawing style}] (gen@husband@father.south) -- (gen@husband@father@below) -- (gen@husband@mother@below) -- (gen@husband@mother.south);
             \draw (gen@husband) -- (gen@husband@above);
         \fi
         %Draw parents of wife assuming as it should be that if one is defined, both are (see \internal@parent command)
         \if@wife@mother@set
-            \drawElement[at={($(gen@wife@above)+(-\xshiftWifeParents,\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/wife/father}{gen@wife@}
+            \drawElement[at={($(gen@wife@above -| firstWifePerson)+(-\wifePeopleDistance/2,\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/wife/father}{gen@wife@}
             \drawElement[at={($(gen@wife@father)+(\pgfkeysvalueof{/genogram/wife parents distance},0)$)}]{/couple/wife/mother}{gen@wife@}
             \draw[\pgfkeysvalueof{/couple/wife/parents/status drawing style}] (gen@wife@father.south) -- (gen@wife@father@below) -- (gen@wife@mother@below) -- (gen@wife@mother.south);
             \draw (gen@wife) -- (gen@wife@above);
         \fi
-        %Draw siblings if some (left of husband and right of wife)
-        \ifnum\value{NumberOfHusbandSiblings}>0%
-            \pgfmathsetlengthmacro{\husbandSiblingsDistance}{\pgfkeysvalueof{/genogram/husband parents distance}/(\theNumberOfHusbandSiblings+1)}
-            \foreach \n in {1,...,\theNumberOfHusbandSiblings}{
-                \drawElement[at={($(gen@husband)-(\n*\husbandSiblingsDistance,0)$)}]{/couple/husband/sibling\n}{gen@husband@}
-                \draw (gen@husband@sibling\n.north) -- (gen@husband@sibling\n @above);
-            }
-        \fi
-        \ifnum\value{NumberOfWifeSiblings}>0%
-            \pgfmathsetlengthmacro{\wifeSiblingsDistance}{\pgfkeysvalueof{/genogram/wife parents distance}/(\theNumberOfWifeSiblings+1)}
-            \foreach \n in {1,...,\theNumberOfWifeSiblings}{
-                \drawElement[at={($(gen@wife)+(\n*\wifeSiblingsDistance,0)$)}]{/couple/wife/sibling\n}{gen@wife@}
-                \draw (gen@wife@sibling\n.north) -- (gen@wife@sibling\n @above);
-            }
-        \fi
         %Connect husband and/or wife to siblings in case no parents have been specified and there are siblings
         \ifnum\value{NumberOfHusbandSiblings}=0\else
             \if@husband@mother@set\else %parents go together so just one if is OK
-                \draw (gen@husband) -- (gen@husband@above) -- (gen@husband@sibling\theNumberOfHusbandSiblings @above);
+                \draw (gen@husband) -- (gen@husband@above);
+                \draw ($(firstHusbandPerson)+(0,\pgfkeysvalueof{/genogram/generation distance}/2)$) -- ($(lastHusbandPerson)+(0,\pgfkeysvalueof{/genogram/generation distance}/2)$);
             \fi
         \fi
         \ifnum\value{NumberOfWifeSiblings}=0\else
             \if@wife@mother@set\else %parents go together so just one if is OK
-                \draw (gen@wife) -- (gen@wife@above) -- (gen@wife@sibling\theNumberOfWifeSiblings @above);
+                \draw (gen@wife) -- (gen@wife@above);
+                \draw ($(firstWifePerson)+(0,\pgfkeysvalueof{/genogram/generation distance}/2)$) -- ($(lastWifePerson)+(0,\pgfkeysvalueof{/genogram/generation distance}/2)$);
             \fi
         \fi
         %Finish with whatever the user wishes
