@@ -267,6 +267,13 @@
     %---------------------------------------------------------------------------------
     brother/default/.style={%
         /couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/.cd,
+        has partner/.initial=0, %this means false, better than .is if -> to be used in \ifnum
+        status drawing style/.initial=married,
+        status/.is choice,
+        status/married/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status drawing style=married style},
+        status/not married/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status drawing style=not married style},
+        status/separated/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status drawing style=separated style},
+        status/divorced/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status drawing style=divorced style},
         life status/.initial=alive,
         age/.initial={},
         name/.initial={},
@@ -275,6 +282,7 @@
         extra label/.style={},
         /couple/brother/.cd % This is called by EVERY \brother and it has to change back to /couple/brother
     },
+    brother/status/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status=#1},
     brother/age/.value required,
     brother/age/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/age=#1},
     brother/name/.value required,
@@ -290,6 +298,13 @@
     %---------------------------------------------------------------------------------
     sister/default/.style={%
         /couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/.cd,
+        has partner/.initial=0, %this means false, better than .is if -> to be used in \ifnum
+        status drawing style/.initial=married,
+        status/.is choice,
+        status/married/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status drawing style=married style},
+        status/not married/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status drawing style=not married style},
+        status/separated/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status drawing style=separated style},
+        status/divorced/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status drawing style=divorced style},
         life status/.initial=alive,
         age/.initial={},
         name/.initial={},
@@ -298,6 +313,7 @@
         extra label/.style={},
         /couple/sister/.cd % This is called by EVERY \brother and it has to change back to /couple/brother
     },
+    sister/status/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status=#1},
     sister/age/.value required,
     sister/age/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/age=#1},
     sister/name/.value required,
@@ -310,6 +326,56 @@
     sister/dead/.value forbidden,
     sister/extra node feature/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/extra node/.style={#1}},
     sister/extra label feature/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/extra label/.style={#1}},
+    %---------------------------------------------------------------------------------
+    brother in law/default/.style={%
+        /couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/has partner=1,
+        /couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/.cd,
+        life status/.initial=alive,
+        age/.initial={},
+        name/.initial={},
+        sex/.initial=male,
+        extra node/.style={},
+        extra label/.style={},
+        /couple/brother in law/.cd % This is called by EVERY \brotherInLaw and it has to change back to /couple/brother in law
+    },
+    brother in law/status/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status=#1},
+    brother in law/age/.value required,
+    brother in law/age/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/age=#1},
+    brother in law/name/.value required,
+    brother in law/name/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/name=#1},
+    brother in law/male/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/sex=male},      % for completeness
+    brother in law/male/.value forbidden,
+    brother in law/female/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/sex=female},  % for completeness
+    brother in law/female/.value forbidden,
+    brother in law/dead/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/life status=dead},
+    brother in law/dead/.value forbidden,
+    brother in law/extra node feature/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/extra node/.style={#1}},
+    brother in law/extra label feature/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/extra label/.style={#1}},
+    %---------------------------------------------------------------------------------
+    sister in law/default/.style={%
+        /couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/has partner=1,
+        /couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/.cd,
+        life status/.initial=alive,
+        age/.initial={},
+        name/.initial={},
+        sex/.initial=female,
+        extra node/.style={},
+        extra label/.style={},
+        /couple/sister in law/.cd % This is called by EVERY \sisterInLaw and it has to change back to /couple/sister in law
+    },
+    sister in law/status/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status=#1},
+    sister in law/age/.value required,
+    sister in law/age/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/age=#1},
+    sister in law/name/.value required,
+    sister in law/name/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/name=#1},
+    sister in law/male/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/sex=male},      % for completeness
+    sister in law/male/.value forbidden,
+    sister in law/female/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/sex=female},  % for completeness
+    sister in law/female/.value forbidden,
+    sister in law/dead/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/life status=dead},
+    sister in law/dead/.value forbidden,
+    sister in law/extra node feature/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/extra node/.style={#1}},
+    sister in law/extra label feature/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/extra label/.style={#1}},
     %---------------------------------------------------------------------------------
     %=================== INTERNAL KEYS NOT THOUGHT FOR THE USER ======================
     husband/father/.is if=@husband@father@set,
@@ -462,6 +528,45 @@
     \internal@sibling[#1]{sister}
 }
 
+\newcommand{\internal@missingPartner}[1]{%
+    \PackageError{Genogram}{%
+        Wrong use of the "#1InLaw" command!\MessageBreak
+        Missing command before to which it should be referred!%
+    }{%
+        Specify the missing command%
+    }
+}
+
+\newcommand{\internal@siblinginlaw}[2][]{%
+    \pgfkeys{/pgf/key filters/and/.install key filter={/pgf/key filters/defined}{/pgf/key filters/equals=/couple/of}}%
+    \pgfkeys{/pgf/key filter handlers/append filtered to/.install key filter handler=\remainingoptions}%
+    \def\remainingoptions{/couple/#2 in law/.cd,default}% Prepare key list for later in \pgfkeysalsofrom
+    \pgfqkeysfiltered{/couple}{#1}%
+    \internal@checkOfValue%
+    \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{husband}=0
+        \ifnum\value{NumberOfHusbandSiblings}=0
+            \internal@missingPartner{#2}
+        \fi
+        \stepcounter{NumberOfHusbandPeopleToDraw}%
+        \pgfkeys{/couple/sibling number to be used=\theNumberOfHusbandSiblings}%
+    \else
+        \ifnum\value{NumberOfWifeSiblings}=0
+            \internal@missingPartner{#2}
+        \fi
+        \stepcounter{NumberOfWifePeopleToDraw}%
+        \pgfkeys{/couple/sibling number to be used=\theNumberOfWifeSiblings}%
+    \fi
+    \pgfkeysalsofrom{\remainingoptions}\ignorespaces
+}
+
+\newcommand{\brotherInLaw}[1][]{%
+    \internal@siblinginlaw[#1]{brother}
+}
+
+\newcommand{\sisterInLaw}[1][]{%
+    \internal@siblinginlaw[#1]{sister}
+}
+
 \newcommand{\setBeforeDrawing}[1][]{%
     \@genogram@default@were@settrue%
     \pgfqkeys{/genogram}{default,#1}\ignorespaces
@@ -512,11 +617,26 @@
                 \coordinate (lastCoordinate) at ($(lastCoordinate)-(\husbandPeopleDistance,0)$);
             \fi
             \foreach \n in {1,...,\theNumberOfHusbandSiblings}{
-                \drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n}{gen@husband@}
+                \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/husband/sibling\n/sex}}{male}=0
+                    \drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n}{gen@husband@}
+                    \ifnum\pgfkeysvalueof{/couple/husband/sibling\n/has partner}=1
+                        \drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n/partner}{gen@husband@sibling\n @}
+                    \fi
+                \else
+                    \ifnum\pgfkeysvalueof{/couple/husband/sibling\n/has partner}=1
+                        \drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n/partner}{gen@husband@sibling\n @}
+                    \fi
+                    \drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n}{gen@husband@}
+                \fi
                 \ifnum\pgfkeysvalueof{/couple/husband/after sibling}=\n
                     \drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband}{gen@}
                 \fi
+                %Draw connections
                 \draw (gen@husband@sibling\n.north) -- (gen@husband@sibling\n @above);
+                \ifnum\pgfkeysvalueof{/couple/husband/sibling\n/has partner}=1
+                    \draw[\pgfkeysvalueof{/couple/husband/sibling\n/status drawing style}]
+                        (gen@husband@sibling\n @partner.south) -- (gen@husband@sibling\n @partner@below) -- (gen@husband@sibling\n @below) -- (gen@husband@sibling\n.south);
+                \fi
             }
         \else
             \drawElement[at=(lastCoordinate)]{/couple/husband}{gen@}
@@ -535,11 +655,26 @@
                 \coordinate (lastCoordinate) at ($(lastCoordinate)-(\wifePeopleDistance,0)$);
             \fi
             \foreach \n in {1,...,\theNumberOfWifeSiblings}{
-                \drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n}{gen@wife@}
+                \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/wife/sibling\n/sex}}{male}=0
+                    \drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n}{gen@wife@}
+                    \ifnum\pgfkeysvalueof{/couple/wife/sibling\n/has partner}=1
+                        \drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n/partner}{gen@wife@sibling\n @}
+                    \fi
+                \else
+                    \ifnum\pgfkeysvalueof{/couple/wife/sibling\n/has partner}=1
+                        \drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n/partner}{gen@wife@sibling\n @}
+                    \fi
+                    \drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n}{gen@wife@}
+                \fi
                 \ifnum\pgfkeysvalueof{/couple/wife/after sibling}=\n
                     \drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife}{gen@}
                 \fi
+                %Draw connections
                 \draw (gen@wife@sibling\n.north) -- (gen@wife@sibling\n @above);
+                \ifnum\pgfkeysvalueof{/couple/wife/sibling\n/has partner}=1
+                    \draw[\pgfkeysvalueof{/couple/wife/sibling\n/status drawing style}]
+                        (gen@wife@sibling\n @partner.south) -- (gen@wife@sibling\n @partner@below) -- (gen@wife@sibling\n @below) -- (gen@wife@sibling\n.south);
+                \fi
             }
         \else
             \drawElement[at=(lastCoordinate)]{/couple/wife}{gen@}
