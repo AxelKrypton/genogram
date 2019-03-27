@@ -2,10 +2,20 @@
 \usepackage{genogram}
 
 \begin{document}
+        \brother[
+        of=husband, age=35, name=Bruce,
+        extra node feature={Navy, fill=Navy!10},
+        extra label feature={text=Navy}
+    ]
     \husband[
         name=Clark, age=30, status=not married,
         extra node feature={red, fill=yellow!10},
         extra label feature={text=red}
+    ]
+    \sister[
+        of=wife, age=36, name=Lucy,
+        extra node feature={magenta, fill=magenta!10},
+        extra label feature={text=magenta}
     ]
     \wife[
         age=31, name=Lois,
@@ -42,27 +52,22 @@
         extra node feature={FireBrick, fill=FireBrick!10},
         extra label feature={text=FireBrick}
     ]
-    \sister[
-        of=wife, age=36, name=Lucy,
-        extra node feature={magenta, fill=magenta!10},
-        extra label feature={text=magenta}
-    ]
-    \brother[
-        of=husband, age=35, name=Bruce,
-        extra node feature={Navy, fill=Navy!10},
-        extra label feature={text=Navy}
-    ]
 
     \addToTikzpicture{%
         \begin{scope}[every node/.style={inner sep=0, inner ysep=1mm, font=\ttfamily\tiny}]
-            \node[text=red, anchor=north west] at (gen@husband.east) {
+            \node[text=red, anchor=north west] at (gen@husband.north east) {
                 \begin{tabular}{r@{}l}
                     \char`\\husband[ & name=Clark,\\
                     & age=30, \\
                     & status=not married]
                 \end{tabular}
             };
-            \node[text=violet, anchor=south east] at (gen@wife.west) {\char`\\wife[age=31, name=Lois]~~};
+            \node[text=violet, anchor=west] at (gen@wife.east) {
+                \begin{tabular}{r@{}l}
+                    \char`\\wife[ & age=31,\\
+                    &name=Lois]
+                \end{tabular}
+            };
             \node[text=orange, left = 1mm of gen@child1] {\char`\\child[male, age=3, name=Tony]};
             \node[text=blue,    right = 1mm of gen@child2] {\char`\\child[female, age=5, name=Pepper]};
             \node[text=magenta, below = 0mm of gen@wife@sibling1] {
