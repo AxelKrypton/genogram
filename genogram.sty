@@ -268,7 +268,7 @@
     brother/default/.style={%
         /couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/.cd,
         has partner/.initial=0, %this means false, better than .is if -> to be used in \ifnum
-        status drawing style/.initial=married,
+        status drawing style/.initial=married style,
         status/.is choice,
         status/married/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status drawing style=married style},
         status/not married/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status drawing style=not married style},
@@ -299,7 +299,7 @@
     sister/default/.style={%
         /couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/.cd,
         has partner/.initial=0, %this means false, better than .is if -> to be used in \ifnum
-        status drawing style/.initial=married,
+        status drawing style/.initial=married style,
         status/.is choice,
         status/married/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status drawing style=married style},
         status/not married/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status drawing style=not married style},
