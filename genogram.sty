@@ -268,6 +268,7 @@
     brother/default/.style={%
         /couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/.cd,
         has partner/.initial=0, %this means false, better than .is if -> to be used in \ifnum
+        number of children/.initial=0,
         status drawing style/.initial=married style,
         status/.is choice,
         status/married/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status drawing style=married style},
@@ -299,6 +300,7 @@
     sister/default/.style={%
         /couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/.cd,
         has partner/.initial=0, %this means false, better than .is if -> to be used in \ifnum
+        number of children/.initial=0,
         status drawing style/.initial=married style,
         status/.is choice,
         status/married/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/status drawing style=married style},
@@ -377,6 +379,31 @@
     sister in law/extra node feature/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/extra node/.style={#1}},
     sister in law/extra label feature/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/partner/extra label/.style={#1}},
     %---------------------------------------------------------------------------------
+    nibling/default/.style={%
+        /couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/.cd,
+        number of children/.expanded={\the\numexpr\pgfkeysvalueof{/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/number of children}+1\relax},
+        /couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/child\pgfkeysvalueof{/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/number of children}/.cd,
+        life status/.initial=alive,
+        age/.initial={},
+        name/.initial={},
+        sex/.initial=male,
+        extra node/.style={},
+        extra label/.style={},
+        /couple/nibling/.cd % This is called by EVERY \nibling and it has to change back to /couple/nibling
+    },
+    nibling/age/.value required,
+    nibling/age/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/child\pgfkeysvalueof{/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/number of children}/age=#1},
+    nibling/name/.value required,
+    nibling/name/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/child\pgfkeysvalueof{/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/number of children}/name=#1},
+    nibling/male/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/child\pgfkeysvalueof{/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/number of children}/sex=male},      % for completeness
+    nibling/male/.value forbidden,
+    nibling/female/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/child\pgfkeysvalueof{/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/number of children}/sex=female},  % for completeness
+    nibling/female/.value forbidden,
+    nibling/dead/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/child\pgfkeysvalueof{/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/number of children}/life status=dead},
+    nibling/dead/.value forbidden,
+    nibling/extra node feature/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/child\pgfkeysvalueof{/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/number of children}/extra node/.style={#1}},
+    nibling/extra label feature/.style={/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/child\pgfkeysvalueof{/couple/\pgfkeysvalueof{/couple/of}/sibling\pgfkeysvalueof{/couple/sibling number to be used}/number of children}/extra label/.style={#1}},
+    %---------------------------------------------------------------------------------
     %=================== INTERNAL KEYS NOT THOUGHT FOR THE USER ======================
     husband/father/.is if=@husband@father@set,
     husband/father/.initial=false,
@@ -430,7 +457,8 @@
         children generation add distance below/.initial=0mm,
         broken couple symbol height/.initial=1ex,
         broken couple symbol width/.initial=0.5ex,
-        siblings generation add distance/.initial=2mm,
+        siblings generation add distance above/.initial=-3mm,
+        siblings generation add distance below/.initial=-3mm,
         set keys with logic to default
     }
 }%
@@ -569,6 +597,28 @@
     \internal@siblinginlaw[#1]{sister}
 }
 
+\newcommand{\internal@nibling}[2][]{%
+    \pgfkeys{/pgf/key filters/and/.install key filter={/pgf/key filters/defined}{/pgf/key filters/equals=/couple/of}}%
+    \pgfkeys{/pgf/key filter handlers/append filtered to/.install key filter handler=\remainingoptions}%
+    \def\remainingoptions{/couple/nibling/.cd,default,#2}% Prepare key list for later in \pgfkeysalsofrom
+    \pgfqkeysfiltered{/couple}{#1}%
+    \internal@checkOfValue%
+    \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{husband}=0
+        \pgfkeys{/couple/sibling number to be used=\theNumberOfHusbandSiblings}%
+    \else
+        \pgfkeys{/couple/sibling number to be used=\theNumberOfWifeSiblings}%
+    \fi
+    \pgfkeysalsofrom{\remainingoptions}\ignorespaces
+}
+
+\newcommand{\nephew}[1][]{%
+    \internal@nibling[#1]{male}
+}
+
+\newcommand{\niece}[1][]{%
+    \internal@nibling[#1]{female}
+}
+
 \newcommand{\setBeforeDrawing}[1][]{%
     \@genogram@default@were@settrue%
     \pgfqkeys{/genogram}{default,#1}\ignorespaces
@@ -630,6 +680,19 @@
                     \else
                         \drawElement[at={($(lastCoordinate)-(0.5*\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n/partner}{gen@husband@sibling\n @}
                     \fi
+                    %Draw niblings if any!
+                    \pgfmathsetmacro{\theNumberOfNiblings}{\pgfkeysvalueof{/couple/husband/sibling\n/number of children}}
+                    \ifnum\theNumberOfNiblings>0
+                        \foreach \c in {1,...,\theNumberOfNiblings}{
+                            \pgfmathsetmacro{\dyNibling}{\pgfkeysvalueof{/genogram/generation distance}/2+\pgfkeysvalueof{/genogram/siblings generation add distance above}+\pgfkeysvalueof{/genogram/siblings generation add distance below}}
+                            \coordinate (childPos) at ($(gen@husband@sibling\n @below)!{(-0.5+\c)/\theNumberOfNiblings}!(gen@husband@sibling\n @partner@below)-(0,\dyNibling pt)$);
+                            \drawElement[at={(childPos)}]{/couple/husband/sibling\n/child\c}{gen@husband@sibling\n @}
+                            \draw (gen@husband@sibling\n @child\c.north) --
+                                  (gen@husband@sibling\n @child\c.north |- {$(gen@husband@sibling\n @below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$});
+                                  %($(gen@husband@sibling\n @child\c @above)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance below})-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$);
+                        }
+                    \fi
+                    %Restore last sibling coordinate to continue drawing correctly
                     \coordinate (lastCoordinate) at (tmp);
                 \fi
                 \ifnum\pgfkeysvalueof{/couple/husband/after sibling}=\n
@@ -640,8 +703,8 @@
                 \ifnum\pgfkeysvalueof{/couple/husband/sibling\n/has partner}=1
                     \draw[\pgfkeysvalueof{/couple/husband/sibling\n/status drawing style}]
                         (gen@husband@sibling\n @partner.south) --
-                        ($(gen@husband@sibling\n @partner@below)+(0,\pgfkeysvalueof{/genogram/siblings generation add distance})$) --
-                        ($(gen@husband@sibling\n @below)+(0,\pgfkeysvalueof{/genogram/siblings generation add distance})$) --
+                        ($(gen@husband@sibling\n @partner@below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$) --
+                        ($(gen@husband@sibling\n @below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$) --
                         (gen@husband@sibling\n.south);
                 \fi
             }
@@ -678,6 +741,18 @@
                     \else
                         \drawElement[at={($(lastCoordinate)-(0.5*\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n/partner}{gen@wife@sibling\n @}
                     \fi
+                    %Draw niblings if any!
+                    \pgfmathsetmacro{\theNumberOfNiblings}{\pgfkeysvalueof{/couple/wife/sibling\n/number of children}}
+                    \ifnum\theNumberOfNiblings>0
+                        \foreach \c in {1,...,\theNumberOfNiblings}{
+                            \pgfmathsetmacro{\dyNibling}{\pgfkeysvalueof{/genogram/generation distance}/2+\pgfkeysvalueof{/genogram/siblings generation add distance above}+\pgfkeysvalueof{/genogram/siblings generation add distance below}}
+                            \coordinate (childPos) at ($(gen@wife@sibling\n @below)!{(-0.5+\c)/\theNumberOfNiblings}!(gen@wife@sibling\n @partner@below)-(0,\dyNibling pt)$);
+                            \drawElement[at={(childPos)}]{/couple/wife/sibling\n/child\c}{gen@wife@sibling\n @}
+                            \draw (gen@wife@sibling\n @child\c.north) --
+                                  ($(gen@wife@sibling\n @child\c @above)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance below})-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$);
+                        }
+                    \fi
+                    %Restore last sibling coordinate to continue drawing correctly
                     \coordinate (lastCoordinate) at (tmp);
                 \fi
                 \ifnum\pgfkeysvalueof{/couple/wife/after sibling}=\n
@@ -688,8 +763,8 @@
                 \ifnum\pgfkeysvalueof{/couple/wife/sibling\n/has partner}=1
                     \draw[\pgfkeysvalueof{/couple/wife/sibling\n/status drawing style}]
                         (gen@wife@sibling\n @partner.south) --
-                        ($(gen@wife@sibling\n @partner@below)+(0,\pgfkeysvalueof{/genogram/siblings generation add distance})$) --
-                        ($(gen@wife@sibling\n @below)+(0,\pgfkeysvalueof{/genogram/siblings generation add distance})$) --
+                        ($(gen@wife@sibling\n @partner@below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$) --
+                        ($(gen@wife@sibling\n @below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$) --
                         (gen@wife@sibling\n.south);
                 \fi
             }
