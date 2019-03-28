@@ -2,10 +2,20 @@
 \usepackage{genogram}
 
 \begin{document}
-        \brother[
+    \brother[
         of=husband, age=35, name=Bruce,
         extra node feature={Navy, fill=Navy!10},
         extra label feature={text=Navy}
+    ]
+    \sisterInLaw[
+        of=husband, age=32, name=Selina,
+        extra node feature={Plum, fill=Plum!10},
+        extra label feature={text=Plum}
+    ]
+    \niece[
+        of=husband, age=9, name=Robin,
+        extra node feature={OliveDrab, fill=OliveDrab!10},
+        extra label feature={text=OliveDrab}
     ]
     \husband[
         name=Clark, age=30, status=not married,
@@ -22,12 +32,12 @@
         extra node feature={violet, fill=violet!10},
         extra label feature={text=violet}
     ]
-    \child[
+    \son[
         male, age=7, name=Tony,
         extra node feature={orange, fill=orange!10},
         extra label feature={text=orange}
     ]
-    \child[
+    \daughter[
         female, age=5, name=Pepper,
         extra node feature={blue, fill=blue!10},
         extra label feature={text=blue}
@@ -39,8 +49,8 @@
     ]
     \father[
         of=wife, age=68, name=Sam,
-        extra node feature={ForestGreen, fill=ForestGreen!10},
-        extra label feature={text=ForestGreen}
+        extra node feature={Goldenrod, fill=Goldenrod!10},
+        extra label feature={text=Goldenrod}
     ]
     \mother[
         of=husband, dead, age=25, name=Lara,
@@ -52,7 +62,11 @@
         extra node feature={FireBrick, fill=FireBrick!10},
         extra label feature={text=FireBrick}
     ]
-
+    \setBeforeDrawing[
+        husband parents distance=12em,
+        couple distance=20em,
+        siblings generation add distance below=-5mm
+    ]
     \addToTikzpicture{%
         \begin{scope}[every node/.style={inner sep=0, inner ysep=1mm, font=\ttfamily\tiny}]
             \node[text=red, anchor=north west] at (gen@husband.north east) {
@@ -77,11 +91,24 @@
                     &name=Lucy]
                 \end{tabular}
             };
-            \node[text=Navy, below = 0mm of gen@husband@sibling1] {
+            \node[text=Navy, anchor=east] at (gen@husband@sibling1.south west) {
                 \begin{tabular}{r@{}l}
                     \char`\\brother[ & of=husband,\\
                     &age=35,\\
                     &name=Bruce]
+                \end{tabular}
+            };
+            \node[text=Plum, anchor=south east] at (gen@husband@sibling1.north) {
+                \begin{tabular}{r@{}l}
+                    \char`\\sisterInLaw[ & of=husband,\\
+                    & age=32,\\
+                    & name=Selina]
+                \end{tabular}
+            };
+            \node[text=OliveDrab, anchor=east] at (gen@husband@sibling1@child1.west) {
+                \begin{tabular}{r@{}l}
+                    \char`\\niece[ & of=husband,\\
+                    & age=9, name=Robin]
                 \end{tabular}
             };
             \node[text=FireBrick, anchor=north west] at (gen@husband@father.north east) {
@@ -99,7 +126,7 @@
                     & name=Lara
                 \end{tabular}
             };
-            \node[text=ForestGreen, anchor=north west] at ($(gen@wife@father.east)!0.5!(gen@wife@father.south east)$) {
+            \node[text=Goldenrod, anchor=north west] at ($(gen@wife@father.east)!0.5!(gen@wife@father.south east)$) {
                 \begin{tabular}{r@{}l}
                     \char`\\father[ & of=wife,\\
                     & age=68, \\
