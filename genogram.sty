@@ -429,6 +429,7 @@
         generation distance/.initial=3cm,
         broken couple symbol height/.initial=1ex,
         broken couple symbol width/.initial=0.5ex,
+        siblings generation add distance/.initial=2mm,
         set keys with logic to default
     }
 }%
@@ -577,8 +578,10 @@
     \node[\pgfkeysvalueof{#2/sex}=\pgfkeysvalueof{#2/age}, name=#3\filename@base, \pgfkeysvalueof{#2/life status}, #2/extra node, #1];
     \node[anchor=south west, inner sep=0, inner ysep=1pt, font=\scriptsize,
           at={(#3\filename@base.north -| {$(#3\filename@base.center)!0.5!(#3\filename@base.east)$})}, #2/extra label] {\strut\pgfkeysvalueof{#2/name}};
-    % The complicated at abobe is to keep the same position of label no matter if the shape is square or circle (north, center and east anchors
+    % The complicated "at" above is to keep the same position of label no matter if the shape is square or circle (north, center and east anchors
     % are the same and here we use the y coordinate of north and the x coortinate of the midpoint between center and east).
+    %
+    % Update lastCoordinate to last drawn element
     \coordinate (lastCoordinate) at (#3\filename@base.center);
 }
 
@@ -605,7 +608,7 @@
     %together. Actually if siblings have partners they are also drawn here.
     \begin{tikzpicture}[framed]
         %Draw husband with his siblings plus in case brother/sister in law
-        \pgfmathsetlengthmacro{\husbandPeopleDistance}{\pgfkeysvalueof{/genogram/husband parents distance}/(\theNumberOfHusbandPeopleToDraw)}
+        \pgfmathsetlengthmacro{\husbandPeopleDistance}{\pgfkeysvalueof{/genogram/husband parents distance}/(\theNumberOfHusbandSiblings+1)}
         \path coordinate (firstHusbandPerson) at (0,0)
               coordinate (lastCoordinate) at (firstHusbandPerson);
         \ifnum\value{NumberOfHusbandSiblings}>0%
@@ -617,16 +620,16 @@
                 \coordinate (lastCoordinate) at ($(lastCoordinate)-(\husbandPeopleDistance,0)$);
             \fi
             \foreach \n in {1,...,\theNumberOfHusbandSiblings}{
-                \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/husband/sibling\n/sex}}{male}=0
-                    \drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n}{gen@husband@}
-                    \ifnum\pgfkeysvalueof{/couple/husband/sibling\n/has partner}=1
-                        \drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n/partner}{gen@husband@sibling\n @}
+                %Draw sibling with partner if any respecting male-left-to-female notation
+                \drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n}{gen@husband@}
+                \ifnum\pgfkeysvalueof{/couple/husband/sibling\n/has partner}=1
+                    \coordinate (tmp) at (lastCoordinate);
+                    \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/husband/sibling\n/sex}}{male}=0
+                        \drawElement[at={($(lastCoordinate)+(0.5*\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n/partner}{gen@husband@sibling\n @}
+                    \else
+                        \drawElement[at={($(lastCoordinate)-(0.5*\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n/partner}{gen@husband@sibling\n @}
                     \fi
-                \else
-                    \ifnum\pgfkeysvalueof{/couple/husband/sibling\n/has partner}=1
-                        \drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n/partner}{gen@husband@sibling\n @}
-                    \fi
-                    \drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n}{gen@husband@}
+                    \coordinate (lastCoordinate) at (tmp);
                 \fi
                 \ifnum\pgfkeysvalueof{/couple/husband/after sibling}=\n
                     \drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband}{gen@}
@@ -635,7 +638,10 @@
                 \draw (gen@husband@sibling\n.north) -- (gen@husband@sibling\n @above);
                 \ifnum\pgfkeysvalueof{/couple/husband/sibling\n/has partner}=1
                     \draw[\pgfkeysvalueof{/couple/husband/sibling\n/status drawing style}]
-                        (gen@husband@sibling\n @partner.south) -- (gen@husband@sibling\n @partner@below) -- (gen@husband@sibling\n @below) -- (gen@husband@sibling\n.south);
+                        (gen@husband@sibling\n @partner.south) --
+                        ($(gen@husband@sibling\n @partner@below)+(0,\pgfkeysvalueof{/genogram/siblings generation add distance})$) --
+                        ($(gen@husband@sibling\n @below)+(0,\pgfkeysvalueof{/genogram/siblings generation add distance})$) --
+                        (gen@husband@sibling\n.south);
                 \fi
             }
         \else
@@ -643,8 +649,15 @@
         \fi
         \coordinate (lastHusbandPerson) at (lastCoordinate);
         %Draw wife with her siblings plus in case brother/sister in law
-        \pgfmathsetlengthmacro{\wifePeopleDistance}{\pgfkeysvalueof{/genogram/wife parents distance}/(\theNumberOfWifePeopleToDraw)}
-        \path coordinate (lastCoordinate) at ($(lastCoordinate)+(\pgfkeysvalueof{/genogram/couple distance},0)$)
+        \pgfmathsetlengthmacro{\wifePeopleDistance}{\pgfkeysvalueof{/genogram/wife parents distance}/(\theNumberOfWifeSiblings+1)}
+        % Here we jump from the last husband person to the first wife person (partner excluded), but we want to respect the
+        % couple distance. Then, we want to calculate this jump distance accordingly.
+        \pgfmathparse{%
+            \pgfkeysvalueof{/genogram/couple distance}
+            -(\theNumberOfHusbandSiblings - \pgfkeysvalueof{/couple/husband/after sibling})*\husbandPeopleDistance
+            -\pgfkeysvalueof{/couple/wife/after sibling}*\husbandPeopleDistance
+        }
+        \path coordinate (lastCoordinate) at ($(lastCoordinate)+(\pgfmathresult pt,0)$)
               coordinate (firstWifePerson) at (lastCoordinate);
         \ifnum\value{NumberOfWifeSiblings}>0%
             \ifnum\pgfkeysvalueof{/couple/wife/after sibling}=0
@@ -655,16 +668,16 @@
                 \coordinate (lastCoordinate) at ($(lastCoordinate)-(\wifePeopleDistance,0)$);
             \fi
             \foreach \n in {1,...,\theNumberOfWifeSiblings}{
-                \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/wife/sibling\n/sex}}{male}=0
-                    \drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n}{gen@wife@}
-                    \ifnum\pgfkeysvalueof{/couple/wife/sibling\n/has partner}=1
-                        \drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n/partner}{gen@wife@sibling\n @}
+                %Draw sibling with partner if any respecting male-left-to-female notation
+                \drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n}{gen@wife@}
+                \ifnum\pgfkeysvalueof{/couple/wife/sibling\n/has partner}=1
+                    \coordinate (tmp) at (lastCoordinate);
+                    \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/wife/sibling\n/sex}}{male}=0
+                        \drawElement[at={($(lastCoordinate)+(0.5*\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n/partner}{gen@wife@sibling\n @}
+                    \else
+                        \drawElement[at={($(lastCoordinate)-(0.5*\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n/partner}{gen@wife@sibling\n @}
                     \fi
-                \else
-                    \ifnum\pgfkeysvalueof{/couple/wife/sibling\n/has partner}=1
-                        \drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n/partner}{gen@wife@sibling\n @}
-                    \fi
-                    \drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n}{gen@wife@}
+                    \coordinate (lastCoordinate) at (tmp);
                 \fi
                 \ifnum\pgfkeysvalueof{/couple/wife/after sibling}=\n
                     \drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife}{gen@}
@@ -673,7 +686,10 @@
                 \draw (gen@wife@sibling\n.north) -- (gen@wife@sibling\n @above);
                 \ifnum\pgfkeysvalueof{/couple/wife/sibling\n/has partner}=1
                     \draw[\pgfkeysvalueof{/couple/wife/sibling\n/status drawing style}]
-                        (gen@wife@sibling\n @partner.south) -- (gen@wife@sibling\n @partner@below) -- (gen@wife@sibling\n @below) -- (gen@wife@sibling\n.south);
+                        (gen@wife@sibling\n @partner.south) --
+                        ($(gen@wife@sibling\n @partner@below)+(0,\pgfkeysvalueof{/genogram/siblings generation add distance})$) --
+                        ($(gen@wife@sibling\n @below)+(0,\pgfkeysvalueof{/genogram/siblings generation add distance})$) --
+                        (gen@wife@sibling\n.south);
                 \fi
             }
         \else
