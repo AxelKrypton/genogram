@@ -427,6 +427,7 @@
         /genogram,
         /genogram/space around age/.initial=1pt,
         generation distance/.initial=3cm,
+        children generation add distance below/.initial=0mm,
         broken couple symbol height/.initial=1ex,
         broken couple symbol width/.initial=0.5ex,
         siblings generation add distance/.initial=2mm,
@@ -701,9 +702,10 @@
         %Draw children if some (husband and wife nodes always exist because of default values!)
         \ifnum\value{NumberOfChildren}>0%
             \foreach \n in {1,...,\theNumberOfChildren}{
-                \coordinate (tmp) at ($(gen@husband@below)!{(-0.5+\n)/\theNumberOfChildren}!(gen@wife@below)-(0,\pgfkeysvalueof{/genogram/generation distance}/2)$);
-                \drawElement[at=(tmp)]{/couple/child\n}{gen@}
-                \draw (gen@child\n.north) -- (gen@child\n @above);
+                \pgfmathsetmacro{\dyChildren}{\pgfkeysvalueof{/genogram/generation distance}/2+\pgfkeysvalueof{/genogram/children generation add distance below}}
+                \coordinate (childPos) at ($(gen@husband@below)!{(-0.5+\n)/\theNumberOfChildren}!(gen@wife@below)-(0,\dyChildren pt)$);
+                \drawElement[at=(childPos)]{/couple/child\n}{gen@}
+                \draw (gen@child\n.north) -- ($(gen@child\n @above)+(0,\pgfkeysvalueof{/genogram/children generation add distance below})$);
             }
         \fi
         %Draw parents of husband assuming as it should be that if one is defined, both are (see \internal@parent command)
