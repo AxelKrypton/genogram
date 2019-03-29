@@ -657,13 +657,16 @@
     \coordinate (#1above) at ($(#1above)+(0,\pgfkeysvalueof{/genogram/siblings generation add distance below})$);
 }
 
+\newcommand{\internal@adjustChildrenNodes}[1]{% #1=node name prefix
+    \coordinate (#1above) at ($(#1above)+(0,\pgfkeysvalueof{/genogram/children generation add distance below})$);
+}
 
 \newcommand{\drawGenogram}[1][]{%
     \if@genogram@default@were@set\else\pgfkeys{/genogram/default}\fi%
     %Since we want to draw elements left to right in the genogram respecting the order in which they have been specified
     %(age is usually decreasing left to right), then we draw first the couple generation, treating parent/wife and siblings
     %together. Actually if siblings have partners they are also drawn here.
-    \begin{tikzpicture}[framed]
+    \begin{tikzpicture}[framed]%, every node/.style={append after command={\pgfextra{\fill[red] (\tikzlastnode.center) circle(2pt);}}}]
         %Draw husband with his siblings plus in case brother/sister in law
         \pgfmathsetlengthmacro{\husbandPeopleDistance}{\pgfkeysvalueof{/genogram/husband parents distance}/(\theNumberOfHusbandSiblings+1)}
         \path coordinate (firstHusbandPerson) at (0,0)
@@ -739,6 +742,7 @@
             \foreach \n in {1,...,\theNumberOfWifeSiblings}{
                 %Draw sibling with partner if any respecting male-left-to-female notation
                 \internal@drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n}{gen@wife@}
+                \internal@adjustSiblingNodes{gen@wife@sibling\n @}
                 \ifnum\pgfkeysvalueof{/couple/wife/sibling\n/has partner}=1
                     \coordinate (tmp) at (lastCoordinate);
                     \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/wife/sibling\n/sex}}{male}=0
@@ -746,15 +750,17 @@
                     \else
                         \internal@drawElement[at={($(lastCoordinate)-(0.5*\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n/partner}{gen@wife@sibling\n @}
                     \fi
+                    \internal@adjustSiblingNodes{gen@wife@sibling\n @partner@}
                     %Draw niblings if any!
                     \pgfmathsetmacro{\theNumberOfNiblings}{\pgfkeysvalueof{/couple/wife/sibling\n/number of children}}
                     \ifnum\theNumberOfNiblings>0
                         \foreach \c in {1,...,\theNumberOfNiblings}{
-                            \pgfmathsetmacro{\dyNibling}{\pgfkeysvalueof{/genogram/generation distance}/2+\pgfkeysvalueof{/genogram/siblings generation add distance above}+\pgfkeysvalueof{/genogram/siblings generation add distance below}}
+                            \pgfmathsetmacro{\dyNibling}{\pgfkeysvalueof{/genogram/generation distance}/2+\pgfkeysvalueof{/genogram/siblings generation add distance below}}
                             \coordinate (childPos) at ($(gen@wife@sibling\n @below)!{(-0.5+\c)/\theNumberOfNiblings}!(gen@wife@sibling\n @partner@below)-(0,\dyNibling pt)$);
                             \internal@drawElement[at={(childPos)}]{/couple/wife/sibling\n/child\c}{gen@wife@sibling\n @}
+                            \internal@adjustNiblingNodes{gen@wife@sibling\n @child\c @}
                             \draw (gen@wife@sibling\n @child\c.north) --
-                                  (gen@wife@sibling\n @child\c.north |- {$(gen@wife@sibling\n @below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$});
+                                  (gen@wife@sibling\n @child\c.north |- gen@wife@sibling\n @below);
                         }
                     \fi
                     %Restore last sibling coordinate to continue drawing correctly
@@ -767,10 +773,7 @@
                 \draw (gen@wife@sibling\n.north) -- (gen@wife@sibling\n @above);
                 \ifnum\pgfkeysvalueof{/couple/wife/sibling\n/has partner}=1
                     \draw[\pgfkeysvalueof{/couple/wife/sibling\n/status drawing style}]
-                        (gen@wife@sibling\n @partner.south) --
-                        ($(gen@wife@sibling\n @partner@below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$) --
-                        ($(gen@wife@sibling\n @below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$) --
-                        (gen@wife@sibling\n.south);
+                        (gen@wife@sibling\n @partner.south) -- (gen@wife@sibling\n @partner@below) -- (gen@wife@sibling\n @below) -- (gen@wife@sibling\n.south);
                 \fi
             }
         \else
@@ -785,7 +788,8 @@
                 \pgfmathsetmacro{\dyChildren}{\pgfkeysvalueof{/genogram/generation distance}/2+\pgfkeysvalueof{/genogram/children generation add distance below}}
                 \coordinate (childPos) at ($(gen@husband@below)!{(-0.5+\n)/\theNumberOfChildren}!(gen@wife@below)-(0,\dyChildren pt)$);
                 \internal@drawElement[at=(childPos)]{/couple/child\n}{gen@}
-                \draw (gen@child\n.north) -- ($(gen@child\n @above)+(0,\pgfkeysvalueof{/genogram/children generation add distance below})$);
+                \internal@adjustChildrenNodes{gen@child\n @}
+                \draw (gen@child\n.north) -- (gen@child\n @above);
             }
         \fi
         %Draw parents of husband assuming as it should be that if one is defined, both are (see \internal@parent command)
