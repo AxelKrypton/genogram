@@ -649,6 +649,15 @@
     \coordinate (lastCoordinate) at (#3\filename@base.center);
 }
 
+\newcommand{\internal@adjustSiblingNodes}[1]{% #1=node name prefix
+    \coordinate (#1below) at ($(#1below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$);
+}
+
+\newcommand{\internal@adjustNiblingNodes}[1]{% #1=node name prefix
+    \coordinate (#1below) at ($(#1above)+(0,\pgfkeysvalueof{/genogram/siblings generation add distance below})$);
+}
+
+
 \newcommand{\drawGenogram}[1][]{%
     \if@genogram@default@were@set\else\pgfkeys{/genogram/default}\fi%
     %Since we want to draw elements left to right in the genogram respecting the order in which they have been specified
@@ -670,6 +679,7 @@
             \foreach \n in {1,...,\theNumberOfHusbandSiblings}{
                 %Draw sibling with partner if any respecting male-left-to-female notation
                 \internal@drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n}{gen@husband@}
+                \internal@adjustSiblingNodes{gen@husband@sibling\n @}
                 \ifnum\pgfkeysvalueof{/couple/husband/sibling\n/has partner}=1
                     \coordinate (tmp) at (lastCoordinate);
                     \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/husband/sibling\n/sex}}{male}=0
@@ -677,15 +687,17 @@
                     \else
                         \internal@drawElement[at={($(lastCoordinate)-(0.5*\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n/partner}{gen@husband@sibling\n @}
                     \fi
+                    \internal@adjustSiblingNodes{gen@husband@sibling\n @partner@}
                     %Draw niblings if any!
                     \pgfmathsetmacro{\theNumberOfNiblings}{\pgfkeysvalueof{/couple/husband/sibling\n/number of children}}
                     \ifnum\theNumberOfNiblings>0
                         \foreach \c in {1,...,\theNumberOfNiblings}{
-                            \pgfmathsetmacro{\dyNibling}{\pgfkeysvalueof{/genogram/generation distance}/2+\pgfkeysvalueof{/genogram/siblings generation add distance above}+\pgfkeysvalueof{/genogram/siblings generation add distance below}}
+                            \pgfmathsetmacro{\dyNibling}{\pgfkeysvalueof{/genogram/generation distance}/2+\pgfkeysvalueof{/genogram/siblings generation add distance below}}
                             \coordinate (childPos) at ($(gen@husband@sibling\n @below)!{(-0.5+\c)/\theNumberOfNiblings}!(gen@husband@sibling\n @partner@below)-(0,\dyNibling pt)$);
                             \internal@drawElement[at={(childPos)}]{/couple/husband/sibling\n/child\c}{gen@husband@sibling\n @}
+                            \internal@adjustNiblingNodes{gen@husband@sibling\n @child\c @}
                             \draw (gen@husband@sibling\n @child\c.north) --
-                                  (gen@husband@sibling\n @child\c.north |- {$(gen@husband@sibling\n @below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$});
+                                  (gen@husband@sibling\n @child\c.north |- gen@husband@sibling\n @below);
                         }
                     \fi
                     %Restore last sibling coordinate to continue drawing correctly
@@ -698,10 +710,7 @@
                 \draw (gen@husband@sibling\n.north) -- (gen@husband@sibling\n @above);
                 \ifnum\pgfkeysvalueof{/couple/husband/sibling\n/has partner}=1
                     \draw[\pgfkeysvalueof{/couple/husband/sibling\n/status drawing style}]
-                        (gen@husband@sibling\n @partner.south) --
-                        ($(gen@husband@sibling\n @partner@below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$) --
-                        ($(gen@husband@sibling\n @below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$) --
-                        (gen@husband@sibling\n.south);
+                        (gen@husband@sibling\n @partner.south) -- (gen@husband@sibling\n @partner@below) -- (gen@husband@sibling\n @below) -- (gen@husband@sibling\n.south);
                 \fi
             }
         \else
