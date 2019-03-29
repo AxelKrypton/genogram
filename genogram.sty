@@ -697,7 +697,6 @@
                             \drawElement[at={(childPos)}]{/couple/husband/sibling\n/child\c}{gen@husband@sibling\n @}
                             \draw (gen@husband@sibling\n @child\c.north) --
                                   (gen@husband@sibling\n @child\c.north |- {$(gen@husband@sibling\n @below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$});
-                                  %($(gen@husband@sibling\n @child\c @above)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance below})-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$);
                         }
                     \fi
                     %Restore last sibling coordinate to continue drawing correctly
@@ -757,7 +756,7 @@
                             \coordinate (childPos) at ($(gen@wife@sibling\n @below)!{(-0.5+\c)/\theNumberOfNiblings}!(gen@wife@sibling\n @partner@below)-(0,\dyNibling pt)$);
                             \drawElement[at={(childPos)}]{/couple/wife/sibling\n/child\c}{gen@wife@sibling\n @}
                             \draw (gen@wife@sibling\n @child\c.north) --
-                                  ($(gen@wife@sibling\n @child\c @above)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance below})-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$);
+                                  (gen@wife@sibling\n @child\c.north |- {$(gen@wife@sibling\n @below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$});
                         }
                     \fi
                     %Restore last sibling coordinate to continue drawing correctly
