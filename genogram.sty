@@ -632,6 +632,11 @@
     \pgfqkeys{/genogram}{default,#1}\ignorespaces
 }
 
+\newcommand{\internal@extraTikzCode}{}
+\newcommand{\addToTikzpicture}[1]{%
+    \renewcommand{\internal@extraTikzCode}{#1}\ignorespaces
+}
+
 \newcommand{\drawElement}[3][]{% #1=extra node options #2=key name, #3=prefix for node and additional coordinates
     \filename@parse{#2}
     \node[\pgfkeysvalueof{#2/sex}=\pgfkeysvalueof{#2/age}, name=#3\filename@base, \pgfkeysvalueof{#2/life status}, #2/extra node, #1];
@@ -655,10 +660,6 @@
         }}{#2}%
 }
 
-\long\def\internal@extraTikzCode{}
-\newcommand{\addToTikzpicture}[1]{%
-    \long\def\internal@extraTikzCode{#1}\ignorespaces
-}
 
 \newcommand{\drawGenogram}[1][]{%
     \if@genogram@default@were@set\else\pgfkeys{/genogram/default}\fi%
