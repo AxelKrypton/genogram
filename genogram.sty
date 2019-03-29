@@ -649,18 +649,6 @@
     \coordinate (lastCoordinate) at (#3\filename@base.center);
 }
 
-\long\def\ifNodeDefined#1#2{% https://tex.stackexchange.com/a/85531/128737
-    \@ifundefined{pgf@sh@ns@#1}{%
-        \PackageError{Genogram}{%
-            Logical error in drawing.\MessageBreak
-            Node #1 needed but not found.\MessageBreak
-            Please, check the order of your commands%
-        }{%
-            Check the order of your commands!
-        }}{#2}%
-}
-
-
 \newcommand{\drawGenogram}[1][]{%
     \if@genogram@default@were@set\else\pgfkeys{/genogram/default}\fi%
     %Since we want to draw elements left to right in the genogram respecting the order in which they have been specified
