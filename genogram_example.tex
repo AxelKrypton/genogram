@@ -9,8 +9,8 @@
     ]
     \sisterInLaw[
         of=husband, age=32, name=Selina,
-        extra node feature={Plum, fill=Plum!10},
-        extra label feature={text=Plum}
+        extra node feature={BlueViolet, fill=BlueViolet!10},
+        extra label feature={text=BlueViolet}
     ]
     \niece[
         of=husband, age=9, name=Robin,
@@ -67,6 +67,7 @@
         couple distance=20em,
         siblings generation add distance below=-5mm
     ]
+    \addTikzGlobalOptions{framed}
     \addToTikzpicture{%
         \begin{scope}[every node/.style={inner sep=0, inner ysep=1mm, font=\ttfamily\tiny}]
             \node[text=red, anchor=north west] at (gen@husband.north east) {
@@ -98,7 +99,7 @@
                     &name=Bruce]
                 \end{tabular}
             };
-            \node[text=Plum, anchor=south east] at (gen@husband@sibling1.north) {
+            \node[text=BlueViolet, anchor=south east] at (gen@husband@sibling1.north) {
                 \begin{tabular}{r@{}l}
                     \char`\\sisterInLaw[ & of=husband,\\
                     & age=32,\\
