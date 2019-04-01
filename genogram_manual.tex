@@ -14,7 +14,7 @@
 \crefname{figure}{Figure}{Figures}
 \crefname{section}{Section}{Sections}
 
-\newcommand{\versionnumber}{1.0}
+\newcommand{\versionnumber}{2.0}
 \title{The \pn\ package: simply draw simple genograms}
 \author{%
     \begin{tabular}{c}
@@ -37,7 +37,7 @@
 
 \maketitle
 
-\vspace{-1cm}
+%\vspace{-1cm}
 \begin{abstract}
         This document is meant to be a short reference manual
         for the \pn\ package. \emph{Usage simplicity} is
@@ -69,7 +69,19 @@ In \cref{sec:code} you can find a way more complete example.
 The flow to construct the genogram is simple.
 At first, information about the family elements has to be provided and, only at the end, the resulting genogram has to be drawn.
 In a more \TeX -nichal language, there is a drawing command to be issued at the end, after all other commands will have been used to set up features of the genogram.
-As you will see the genogram is centred around a couple (husband and wife) and it is possible to draw them, their children, parents and siblings only.
+As you will see the genogram is centred around a couple (husband and wife) and it is possible to draw their children, parents, siblings, brothers- and sisters-in-law, nephews and nieces.
+
+\subsection*{Drawing rules to keep in mind}
+
+Few rules exist and it is important to know them to achieve what desired.
+
+\begin{itemize}
+    \item In any couple, the man is always drawn left and the woman right.
+    \item The order in which siblings are drawn is exactly as specified by the user
+          This means that siblings of the husband specified before (after) the husband will be drawn left (right) of him.
+          The same applies to the wife and her siblings.
+    \item Children, nephews and nieces of the couple are as well drawn left to right respecting the order in which they were specified by the user.
+\end{itemize}
 
 \subsection*{The command keys}
 
@@ -80,44 +92,82 @@ Possible keys, which will be mentioned later in the command description are the 
     \kitem{name} It is used to add the name of the person in the genogram.
     \kitem{status} Possible values are \texttt{married}, \texttt{not married}, \texttt{separated} or \texttt{divorced}. This key determines how the couples in the genogram are connected.
     \kitem{of} Possible values are \texttt{wife} or \texttt{husband}. Use this key to specify who the command you are using refer to.
-    \item[\key{male} or \key{female}] It is used to specify the sex of the element the command you are using refers to.
     \item[\key{dead}] It is used to specify that the command you are using refers to a dead person.
+    \item[\key{male} or \key{female}] It is used to specify the sex of the element the command you are using refers to.
+                                      Although they are available, there should normally be no need to use them, since any command has a default sex which is implied by the command name (e.g. the default sex of a sister is female.)
 \end{description}
 
 If you need to use for some reason a comma or an equal sign in the value of a key, you must enclose the value in curly braces, e.g. \verb|name={Paul, Jean}|.
+
+\begin{center}\rule{0.5\textwidth}{1pt}\end{center}
+
+\begingroup\small\marginlabel{\textcolor{DarkBlue}{\underline{\textsc{Advanced}}:}}
+To offer to more advanced users the possibility to customise a bit more the genogram, two other keys are offered.
+In order to use them, some \texttt{TikZ} knowledge is required.
+Just ignore them, unless you need to do something that is not achievable using the provided commands.
+In that case, these keys might be the way to go.
+
+The two keys \key{extra node feature} and \key{extra label feature} accept as value a comma separated list of \texttt{key=<value>} elements which are forwarded to a \texttt{TikZ} node.
+This implies that such a list has to be specified in curly braces, e.g.
+\begin{center}
+    \ttfamily extra node feature=\string{text=red, fill=yellow\string}
+\end{center}
+will make the genogram element text (the age) be typeset in red on yellow background.
+As you might have already guessed, the genogram element (square or circle with inside the age) is a \texttt{TikZ} node to which the key \key{extra node feature} refers.
+The name of a person in the genogram is also a \texttt{TikZ} node and you can customise it using the \key{extra label feature} key.
+At the moment there is no key to customise paths.
+\endgroup
+
+\begin{center}\rule{0.5\textwidth}{1pt}\end{center}
 
 \subsection*{The main commands}
 
 Commands are in general used to add elements to the genogram.
 Their names are self-explanatory and the following list provide the missing piece of information: Which key can be passed to which command.
+Please, keep in mind that the default sex of each command is the one suggested by the command name.
+However, just in case of special needs, all commands accept the \key{male} and \key{female} keys\footnote{Specifying the default sex is accepted, but it has no effect, unless the key is specified after having given the opposite sex key. Definitely a contrived scenario.}.
 
 \begin{description}
+    \advance\labelwidth by  1mm
+    \advance\labelsep   by -1mm
     \citem{drawGenogram}
         This is probably the main command of the package, in the sense that it is responsible of drawing the genogram.
         Remember to use it only after having specified all family members, but do not forget to use it!
-    \citem{wife[...]}
+    \citem{wife[]}
         Accepted keys are \key{age}, \key{name}, \key{status} and \key{dead}.
-        By default, the sex of the wife is assumed to be female, but the key \key{male} may be specified\footnote{For completeness, also the \key{female} key is accepted, but it has no effect, unless it is specified after having given the \key{male} key. Definitely a contrived scenario.}.
-    \citem{husband[...]}
-        Completely analogue to the \command{wife} command, but the default sex is male.
-    \citem{child[...]}
-        Accepted keys are \key{age}, \key{name}, \key{male} or \key{female} and \key{dead}.
-        Although the default sex is male, you are encouraged to explicitly specify the sex to make your genogram more readable.
-        This command can and has to be repeated to specify more children.
-        The order in which children are drawn is left to right respecting the order in which they have been specified.
-    \citem{mother[...]}
+    \citem{husband[]}
+        Completely analogue to the \command{wife} command.
+    \citem{daughter[]}
+        Accepted keys are \key{age}, \key{name}, and \key{dead}.
+        This command can and has to be repeated to specify more daughters.
+    \citem{son[]}
+        Completely analogue to the \command{daughter} command.
+    \citem{mother[]}
         Accepted keys are \key{of}, \key{age}, \key{name}, \key{status} and \key{dead}.
         Use the \key{of} key to specify whether you are specifying the mother of the wife or of the husband.
-        The same consideration about the sex done for the wife are valid for the mother.
-    \citem{father[...]}
-        Completely analogue to the \command{mother} command, but the default sex is male.
-    \citem{sister[...]}
+    \citem{father[]}
+        Completely analogue to the \command{mother} command.
+    \citem{sister[]}
         Accepted keys are \key{of}, \key{age}, \key{name}, and \key{dead}.
         Use the \key{of} key to specify whether you are specifying a sister of the wife or of the husband.
         This command can and has to be repeated to specify more sisters.
-        The same consideration about the sex done for the wife are valid for the sister.
-    \citem{brother[...]}
-        Completely analogue to the \command{sister} command, but the default sex is male.
+    \citem{brother[]}
+        Completely analogue to the \command{sister} command.
+    \citem{sisterInLaw[]}
+        Accepted keys are \key{of}, \key{age}, \key{name}, and \key{dead}.
+        Use the \key{of} key to specify whether you are specifying a sister-in-law of the wife or of the husband.
+        Pay attention to use this command in the right place, since it will refer to the last specified sibling (either of the wife or of the husband).
+        It makes then sense to use this command after the \command{brother} command\footnote{The user might be confused since siblings of the husband (wife) are also siblings-in-law of the wife (husband). However, the \command{sisterInLaw} and \command{brotherInLaw} commands \textbf{cannot} be used to specify simple siblings. Use the \command{sister} and \command{brother} for that purpose.}.
+    \citem{brotherInLaw[]}
+        Completely analogue to the \command{sisterInLaw} command.
+    \citem{niece[]}
+        Accepted keys are \key{age}, \key{name}, and \key{dead}.
+        This command can and has to be repeated to specify more nieces.
+        Pay attention to use this command in the right place, since it will refer to the last specified sibling (either of the wife or of the husband).
+        Note as well that this command will have no effect if the sister- or brother-in-law of the husband or of the wife has not been specified before.
+        Said differently, the niece is drawn only if both her parents have been specified.
+    \citem{nephew[]}
+        Completely analogue to the \command{niece} command.
 \end{description}
 
 \paragraph{Remarks:}
@@ -127,8 +177,6 @@ Their names are self-explanatory and the following list provide the missing piec
           Providing either the \command{mother} or the \command{father} command only will make a basic element for the unspecified parent be drawn.
     \item The \key{status} key needs to be specified only for one of the two elements of a couple.
           If you specify it in both elements, the later will be applied.
-    \item The order in which siblings are drawn is at the left of the husband and at the right of the wife respecting the order in which they have been specified.
-
 \end{itemize}
 
 \subsection*{A command to customise the genogram appearance}
@@ -159,27 +207,24 @@ For separated or divorced couple, you can change the height of the correspondent
 \intextmarginnote{\key{broken couple symbol width}:}
 For separated or divorced couple, you can change the width of the correspondent symbol using this key. The default value is \default{0.5ex}.
 
+\intextmarginnote{\key{children generation add distance below}:}
+You might need to stretch or shrink the vertical line above each children; specify a positive or negative distance, respectively, which will be added to it. The default value is \default{0mm}.
+
+\intextmarginnote{\key{siblings generation add distance above}:}
+You might need to stretch or shrink the vertical line below each brother- or sister-in-law and their partners; specify a positive or negative distance, respectively, which will be added to it. The default value is \default{-3mm}.
+
+\intextmarginnote{\key{siblings generation add distance below}:}
+You might need to stretch or shrink the vertical line above each nephew and niece; specify a positive or negative distance, respectively, which will be added to it. The default value is \default{-3mm}.
 
 
 \begin{center}\rule{0.5\textwidth}{1pt}\end{center}
 
 \begingroup\small\marginlabel{\textcolor{DarkBlue}{\underline{\textsc{Advanced}}:}}
-To offer to more advanced users the possibility to customise a bit more the genogram, two other keys are offered.
-In order to use them, some \texttt{TikZ} knowledge is required.
-Just ignore them, unless you need to do something that is not achievable using the provided commands.
-In that case, these keys might be the way to go.
-
-The two keys \key{extra node feature} and \key{extra label feature} accept as value a comma separated list of \texttt{key=<value>} elements which are forwarded to a \texttt{TikZ} node.
-This implies that such a list has to be specified in curly braces, e.g.
-\begin{center}
-    \ttfamily extra node feature=\string{text=red, fill=yellow\string}
-\end{center}
-will make the genogram element text (the age) be typeset in red on yellow background.
-As you might have already guessed, the genogram element (square or circle with inside the age) is a \texttt{TikZ} node to which the key \key{extra node feature} refers.
-The name of a person in the genogram is also a \texttt{TikZ} node and you can customise it using the \key{extra label feature} key.
-At the moment there is no key to customise paths.
-
+To offer to more advanced users the possibility to customise the \texttt{tikzpicture} even further, you can use the \command{addTikzGlobalOptions} command in order to specify global TikZ options.
+For instance, use \texttt{\char`\\addTikzGlobalOptions\string{framed\string}} to add a frame to your genogram.
 \endgroup
+
+
 
 
 \newpage
@@ -199,68 +244,95 @@ At the moment there is no key to customise paths.
 \vspace{-4mm}
 \begingroup\small
 
-\marginlabel{\vspace{3.5mm} Black and white:}
-\begin{verbatim}
-  \documentclass[border=1mm, svgnames]{standalone}
-  \usepackage{genogram}
-  \begin{document}
-      \husband[name=Clark, age=30, status=not married]
-      \wife[age=31, name=Lois]
-      \child[male, age=7, name=Tony]
-      \child[female, age=5, name=Pepper]
-      \mother[of=wife, age=65, name=Ella]
-      \father[of=wife, age=68, name=Sam]
-      \mother[of=husband, dead, age=25, name=Lara]
-      \father[of=husband, dead, age=32, name=Thomas, status=divorced]
-      \sister[of=wife, age=36, name=Lucy]
-      \brother[of=husband, age=35, name=Bruce]
-      \drawGenogram
-  \end{document}
-\end{verbatim}
 
 %\vspace{-4mm}
 \marginlabel{\vspace{3.6mm}Coloured version:}
 \begin{verbatim}
-  \documentclass[border=1mm, svgnames]{standalone}
+  \documentclass[svgnames,border=1mm]{standalone}
   \usepackage{genogram}
 
   \begin{document}
-      \husband[name=Clark, age=30, status=not married,
-               extra node feature={red, fill=yellow!10},
-               extra label feature={text=red}]
-      \wife[age=31, name=Lois,
-            extra node feature={violet, fill=violet!10},
-            extra label feature={text=violet}]
-      \child[male, age=7, name=Tony,
-             extra node feature={orange, fill=orange!10},
-             extra label feature={text=orange}]
-      \child[female, age=5, name=Pepper,
-              extra node feature={blue, fill=blue!10},
-              extra label feature={text=blue}]
-      \mother[of=wife, age=65, name=Ella,
-              extra node feature={Teal, fill=Teal!10},
-              extra label feature={text=Teal}]
-      \father[of=wife, age=68, name=Sam,
-              extra node feature={ForestGreen, fill=ForestGreen!10},
-              extra label feature={text=ForestGreen}]
-      \mother[of=husband, dead, age=25, name=Lara,
-              extra node feature={LightSeaGreen, fill=LightSeaGreen!10},
-              extra label feature={text=LightSeaGreen}]
-      \father[of=husband, dead, age=32, name=Thomas, status=divorced,
-              extra node feature={FireBrick, fill=FireBrick!10},
-              extra label feature={text=FireBrick}]
-      \sister[of=wife, age=36, name=Lucy,
-              extra node feature={magenta, fill=magenta!10},
-              extra label feature={text=magenta}]
-      \brother[of=husband, age=35, name=Bruce,
-               extra node feature={Navy, fill=Navy!10},
-               extra label feature={text=Navy}]
-      \drawGenogram
+    \brother[
+        of=husband, age=35, name=Bruce,
+        extra node feature={Navy, fill=Navy!10},
+        extra label feature={text=Navy}]
+    \sisterInLaw[
+        of=husband, age=32, name=Selina,
+        extra node feature={BlueViolet, fill=BlueViolet!10},
+        extra label feature={text=BlueViolet}]
+    \niece[
+        of=husband, age=9, name=Robin,
+        extra node feature={OliveDrab, fill=OliveDrab!10},
+        extra label feature={text=OliveDrab}]
+    \husband[
+        name=Clark, age=30, status=not married,
+        extra node feature={red, fill=yellow!10},
+        extra label feature={text=red}]
+    \sister[
+        of=wife, age=36, name=Lucy,
+        extra node feature={magenta, fill=magenta!10},
+        extra label feature={text=magenta}]
+    \wife[
+        age=31, name=Lois,
+        extra node feature={violet, fill=violet!10},
+        extra label feature={text=violet}]
+    \son[
+        male, age=7, name=Tony,
+        extra node feature={orange, fill=orange!10},
+        extra label feature={text=orange}]
+    \daughter[
+        female, age=5, name=Pepper,
+        extra node feature={blue, fill=blue!10},
+        extra label feature={text=blue}]
+    \mother[
+        of=wife, age=65, name=Ella,
+        extra node feature={Teal, fill=Teal!10},
+        extra label feature={text=Teal}]
+    \father[
+        of=wife, age=68, name=Sam,
+        extra node feature={Goldenrod, fill=Goldenrod!10},
+        extra label feature={text=Goldenrod}]
+    \mother[
+        of=husband, dead, age=25, name=Lara,
+        extra node feature={LightSeaGreen, fill=LightSeaGreen!10},
+        extra label feature={text=LightSeaGreen}]
+    \father[
+        of=husband, dead, age=32, name=Thomas, status=divorced,
+        extra node feature={FireBrick, fill=FireBrick!10},
+        extra label feature={text=FireBrick}]
+    \setBeforeDrawing[
+        husband parents distance=12em, couple distance=20em,
+        siblings generation add distance below=-5mm]
+    \addTikzGlobalOptions{framed}
+    \drawGenogram
+  \end{document}
+\end{verbatim}
+
+\marginlabel{\vspace{3.5mm} Black and white:}
+\begin{verbatim}
+  \documentclass[border=1mm]{standalone}
+  \usepackage{genogram}
+
+  \begin{document}
+    \brother[of=husband, age=35, name=Bruce]
+    \sisterInLaw[of=husband, age=32, name=Selina]
+    \niece[of=husband, age=9, name=Robin]
+    \husband[name=Clark, age=30, status=not married]
+    \sister[of=wife, age=36, name=Lucy]
+    \wife[age=31, name=Lois]
+    \son[male, age=7, name=Tony]
+    \daughter[female, age=5, name=Pepper]
+    \mother[of=wife, age=65, name=Ella]
+    \father[of=wife, age=68, name=Sam]
+    \mother[of=husband, dead, age=25, name=Lara]
+    \father[of=husband, dead, age=32, name=Thomas, status=divorced]
+    \setBeforeDrawing[husband parents distance=12em, couple distance=20em,
+                      siblings generation add distance below=-5mm]
+    \addTikzGlobalOptions{framed}
+    \drawGenogram
   \end{document}
 \end{verbatim}
 \endgroup
-
-\newpage
 
 
 \section{Towards more freedom \hfill{\color{DarkBlue}\normalfont\scshape Advanced}}
@@ -272,17 +344,27 @@ It is enough to give valid \texttt{TikZ} code in its mandatory argument.
 Available \texttt{nodes} are
 \begin{center}
     \ttfamily
-    \begin{tabular}{l@{\hspace{4em}}l@{\hspace{4em}}l}
-        gen@husband              &  gen@wife            & \multirow{4}{*}{gen@child<n>}\\
-        gen@husband@mother       &  gen@wife@mother     & \\
-        gen@husband@father       &  gen@wife@father     & \\
-        gen@husband@sibling<n>   &  gen@wife@sibling<n> & \\
+    \begin{tabular}{l@{\hspace{4em}}l}
+        gen@child<n> &\\
+        gen@husband                      &  gen@wife                     \\
+        gen@husband@mother               &  gen@wife@mother              \\
+        gen@husband@father               &  gen@wife@father              \\
+        gen@husband@sibling<n>           &  gen@wife@sibling<n>          \\
+        gen@husband@sibling<n>@partner   &  gen@wife@sibling<n>@partner  \\
+        gen@husband@sibling<n>@child<m>  &  gen@wife@sibling<n>@child<m> \\
     \end{tabular}
 \end{center}
-and the names as well as the positions should be self explanatory.
-Note that \texttt{<n>} should be substituted with positive integers numbers and the index increases as the genogram elements are drawn.
+where the names as well as the positions should be self explanatory.
+Note that \texttt{<n>} and \texttt{<m>} should be substituted with positive integers numbers and the index increases as the genogram elements are drawn\footnote{To be pedantic, the index does not increase at time of drawing and only nodes or coordinates are created in the \texttt{tikzpicture}. This should be irrelevant for you, though. The main message here is that the node indices respect the order in which genogram elements have been specified.}.
 For each of the above listed nodes, two additional \texttt{coordinates} exists and they are called \texttt{<node name>@above} and \texttt{<node name>@below}.
-These coordinates refer to points exactly in the middle between generations.
+These coordinates refer to points exactly at the line crossing point between generations.
+You can use something like
+\begin{verbatim}
+    \addToTikzpicture{%
+        \draw[red] (gen@husband@father@below) circle[radius=1pt];
+    }
+\end{verbatim}
+to see where the coordinate \texttt{gen@husband@father@below} is.
 \emph{If you know arrived here reading this section, you will know how to make use of this information.}
 
 
