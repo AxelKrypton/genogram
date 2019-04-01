@@ -452,7 +452,8 @@
     },
     default/.style={%
         /genogram,
-        /genogram/space around age/.initial=1pt,
+        internal@extraTikzOptions/.initial={},
+        space around age/.initial=1pt,
         generation distance/.initial=3cm,
         children generation add distance below/.initial=0mm,
         broken couple symbol height/.initial=1ex,
@@ -632,6 +633,12 @@
     \pgfqkeys{/genogram}{default,#1}\ignorespaces
 }
 
+\newcommand{\addTikzGlobalOptions}[1]{%
+    \pgfkeys{%
+        /genogram/internal@extraTikzOptions/.style={#1}
+    }\ignorespaces
+}
+
 \newcommand{\internal@extraTikzCode}{}
 \newcommand{\addToTikzpicture}[1]{%
     \renewcommand{\internal@extraTikzCode}{#1}\ignorespaces
@@ -666,7 +673,7 @@
     %Since we want to draw elements left to right in the genogram respecting the order in which they have been specified
     %(age is usually decreasing left to right), then we draw first the couple generation, treating parent/wife and siblings
     %together. Actually if siblings have partners they are also drawn here.
-    \begin{tikzpicture}[framed]%, every node/.style={append after command={\pgfextra{\fill[red] (\tikzlastnode.center) circle(2pt);}}}]
+    \begin{tikzpicture}[/genogram/internal@extraTikzOptions]
         %Draw husband with his siblings plus in case brother/sister in law
         \pgfmathsetlengthmacro{\husbandPeopleDistance}{\pgfkeysvalueof{/genogram/husband parents distance}/(\theNumberOfHusbandSiblings+1)}
         \path coordinate (firstHusbandPerson) at (0,0)
