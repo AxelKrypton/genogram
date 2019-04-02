@@ -717,9 +717,14 @@
                                 \coordinate (niblingPos) at ($(gen@husband@sibling\n @below)!0.5!(gen@husband@sibling\n @partner@below)-(0,\dyNiblings pt)$);
                             \else
                                 %First and last nibling on the boundaries
-                                \path coordinate (firstNibling) at ($(gen@husband@sibling\n @below)+(\pgfkeysvalueof{/genogram/niblings outer space},0)$)
-                                      coordinate (lastNibling)  at ($(gen@husband@sibling\n @partner@below)-(\pgfkeysvalueof{/genogram/niblings outer space},0)$)
-                                      coordinate (niblingPos)   at ($(firstNibling)!{(\c-1)/(\theNumberOfNiblings-1)}!(lastNibling)-(0,\dyNiblings pt)$);
+                                \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/husband/sibling\n/sex}}{male}=0
+                                    \path coordinate (firstNibling) at ($(gen@husband@sibling\n @below)+(\pgfkeysvalueof{/genogram/niblings outer space},0)$)
+                                          coordinate (lastNibling)  at ($(gen@husband@sibling\n @partner@below)-(\pgfkeysvalueof{/genogram/niblings outer space},0)$);
+                                \else
+                                    \path coordinate (firstNibling) at ($(gen@husband@sibling\n @partner@below)+(\pgfkeysvalueof{/genogram/niblings outer space},0)$)
+                                          coordinate (lastNibling)  at ($(gen@husband@sibling\n @below)-(\pgfkeysvalueof{/genogram/niblings outer space},0)$);
+                                \fi
+                                \coordinate (niblingPos)   at ($(firstNibling)!{(\c-1)/(\theNumberOfNiblings-1)}!(lastNibling)-(0,\dyNiblings pt)$);
                             \fi
                             \genogram@drawElement[at={(niblingPos)}]{/couple/husband/sibling\n/child\c}{gen@husband@sibling\n @}
                             \genogram@adjustNiblingNodes{gen@husband@sibling\n @child\c @}
@@ -790,7 +795,14 @@
                                 \coordinate (niblingPos) at ($(gen@wife@sibling\n @below)!0.5!(gen@wife@sibling\n @partner@below)-(0,\dyNiblings pt)$);
                             \else
                                 %First and last nibling on the boundaries
-                                \coordinate (niblingPos) at ($(gen@wife@sibling\n @below)!{(\c-1)/(\theNumberOfNiblings-1)}!(gen@wife@sibling\n @partner@below)-(0,\dyNiblings pt)$);
+                                \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/wife/sibling\n/sex}}{male}=0
+                                    \path coordinate (firstNibling) at ($(gen@wife@sibling\n @below)+(\pgfkeysvalueof{/genogram/niblings outer space},0)$)
+                                          coordinate (lastNibling)  at ($(gen@wife@sibling\n @partner@below)-(\pgfkeysvalueof{/genogram/niblings outer space},0)$);
+                                \else
+                                    \path coordinate (firstNibling) at ($(gen@wife@sibling\n @partner@below)+(\pgfkeysvalueof{/genogram/niblings outer space},0)$)
+                                          coordinate (lastNibling)  at ($(gen@wife@sibling\n @below)-(\pgfkeysvalueof{/genogram/niblings outer space},0)$);
+                                \fi
+                                \coordinate (niblingPos)   at ($(firstNibling)!{(\c-1)/(\theNumberOfNiblings-1)}!(lastNibling)-(0,\dyNiblings pt)$);
                             \fi
                             \genogram@drawElement[at={(niblingPos)}]{/couple/wife/sibling\n/child\c}{gen@wife@sibling\n @}
                             \genogram@adjustNiblingNodes{gen@wife@sibling\n @child\c @}
