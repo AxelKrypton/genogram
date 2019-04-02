@@ -460,6 +460,10 @@
         broken couple symbol width/.initial=0.5ex,
         siblings generation add distance above/.initial=-3mm,
         siblings generation add distance below/.initial=-3mm,
+        husband people outer space/.initial = 2em,
+        wife people outer space/.initial = 2em,
+        niblings outer space/.initial = -2em,
+        children outer space/.initial = 3.75em,
         set keys with logic to default
     }
 }%
@@ -675,7 +679,12 @@
     %together. Actually if siblings have partners they are also drawn here.
     \begin{tikzpicture}[/genogram/internal@extraTikzOptions]
         %Draw husband with his siblings plus in case brother/sister in law
-        \pgfmathsetlengthmacro{\husbandPeopleDistance}{\pgfkeysvalueof{/genogram/husband parents distance}/(\theNumberOfHusbandSiblings+1)}
+        \ifnum\value{NumberOfHusbandSiblings}=0%
+            \pgfmathsetlengthmacro{\husbandPeopleDistance}{\pgfkeysvalueof{/genogram/husband parents distance}}
+        \else
+            %Here I subtract the outer space and divide by the number of husband siblings +1 (the husband) -1 (because we want to draw the first and last elements on the boundaries of the available space)
+            \pgfmathsetlengthmacro{\husbandPeopleDistance}{(\pgfkeysvalueof{/genogram/husband parents distance}-2*\pgfkeysvalueof{/genogram/husband people outer space})/(\theNumberOfHusbandSiblings)}
+        \fi
         \path coordinate (firstHusbandPerson) at (0,0)
               coordinate (lastCoordinate) at (firstHusbandPerson);
         \ifnum\value{NumberOfHusbandSiblings}>0%
@@ -702,9 +711,17 @@
                     \pgfmathsetmacro{\theNumberOfNiblings}{\pgfkeysvalueof{/couple/husband/sibling\n/number of children}}
                     \ifnum\theNumberOfNiblings>0
                         \foreach \c in {1,...,\theNumberOfNiblings}{
-                            \pgfmathsetmacro{\dyNibling}{\pgfkeysvalueof{/genogram/generation distance}/2+\pgfkeysvalueof{/genogram/siblings generation add distance below}}
-                            \coordinate (childPos) at ($(gen@husband@sibling\n @below)!{(-0.5+\c)/\theNumberOfNiblings}!(gen@husband@sibling\n @partner@below)-(0,\dyNibling pt)$);
-                            \internal@drawElement[at={(childPos)}]{/couple/husband/sibling\n/child\c}{gen@husband@sibling\n @}
+                            \pgfmathsetmacro{\dyNiblings}{\pgfkeysvalueof{/genogram/generation distance}/2+\pgfkeysvalueof{/genogram/siblings generation add distance below}}
+                            \ifnum\theNumberOfNiblings=1
+                                %Single nibling always in the middle
+                                \coordinate (niblingPos) at ($(gen@husband@sibling\n @below)!0.5!(gen@husband@sibling\n @partner@below)-(0,\dyNiblings pt)$);
+                            \else
+                                %First and last nibling on the boundaries
+                                \path coordinate (firstNibling) at ($(gen@husband@sibling\n @below)+(\pgfkeysvalueof{/genogram/niblings outer space},0)$)
+                                      coordinate (lastNibling)  at ($(gen@husband@sibling\n @partner@below)-(\pgfkeysvalueof{/genogram/niblings outer space},0)$)
+                                      coordinate (niblingPos)   at ($(firstNibling)!{(\c-1)/(\theNumberOfNiblings-1)}!(lastNibling)-(0,\dyNiblings pt)$);
+                            \fi
+                            \internal@drawElement[at={(niblingPos)}]{/couple/husband/sibling\n/child\c}{gen@husband@sibling\n @}
                             \internal@adjustNiblingNodes{gen@husband@sibling\n @child\c @}
                             \draw (gen@husband@sibling\n @child\c.north) --
                                   (gen@husband@sibling\n @child\c.north |- gen@husband@sibling\n @below);
@@ -728,7 +745,12 @@
         \fi
         \coordinate (lastHusbandPerson) at (lastCoordinate);
         %Draw wife with her siblings plus in case brother/sister in law
-        \pgfmathsetlengthmacro{\wifePeopleDistance}{\pgfkeysvalueof{/genogram/wife parents distance}/(\theNumberOfWifeSiblings+1)}
+        \ifnum\value{NumberOfWifeSiblings}=0%
+            \pgfmathsetlengthmacro{\wifePeopleDistance}{\pgfkeysvalueof{/genogram/wife parents distance}}
+        \else
+            %Here I subtract the outer space and divide by the number of wife siblings +1 (the wife) -1 (because we want to draw the first and last elements on the boundaries of the available space)
+            \pgfmathsetlengthmacro{\wifePeopleDistance}{(\pgfkeysvalueof{/genogram/wife parents distance}-2*\pgfkeysvalueof{/genogram/wife people outer space})/(\theNumberOfWifeSiblings)}
+        \fi
         % Here we jump from the last husband person to the first wife person (partner excluded), but we want to respect the
         % couple distance. Then, we want to calculate this jump distance accordingly.
         \pgfmathparse{%
@@ -762,9 +784,15 @@
                     \pgfmathsetmacro{\theNumberOfNiblings}{\pgfkeysvalueof{/couple/wife/sibling\n/number of children}}
                     \ifnum\theNumberOfNiblings>0
                         \foreach \c in {1,...,\theNumberOfNiblings}{
-                            \pgfmathsetmacro{\dyNibling}{\pgfkeysvalueof{/genogram/generation distance}/2+\pgfkeysvalueof{/genogram/siblings generation add distance below}}
-                            \coordinate (childPos) at ($(gen@wife@sibling\n @below)!{(-0.5+\c)/\theNumberOfNiblings}!(gen@wife@sibling\n @partner@below)-(0,\dyNibling pt)$);
-                            \internal@drawElement[at={(childPos)}]{/couple/wife/sibling\n/child\c}{gen@wife@sibling\n @}
+                            \pgfmathsetmacro{\dyNiblings}{\pgfkeysvalueof{/genogram/generation distance}/2+\pgfkeysvalueof{/genogram/siblings generation add distance below}}
+                            \ifnum\theNumberOfNiblings=1
+                                %Single nibling always in the middle
+                                \coordinate (niblingPos) at ($(gen@wife@sibling\n @below)!0.5!(gen@wife@sibling\n @partner@below)-(0,\dyNiblings pt)$);
+                            \else
+                                %First and last nibling on the boundaries
+                                \coordinate (niblingPos) at ($(gen@wife@sibling\n @below)!{(\c-1)/(\theNumberOfNiblings-1)}!(gen@wife@sibling\n @partner@below)-(0,\dyNiblings pt)$);
+                            \fi
+                            \internal@drawElement[at={(niblingPos)}]{/couple/wife/sibling\n/child\c}{gen@wife@sibling\n @}
                             \internal@adjustNiblingNodes{gen@wife@sibling\n @child\c @}
                             \draw (gen@wife@sibling\n @child\c.north) --
                                   (gen@wife@sibling\n @child\c.north |- gen@wife@sibling\n @below);
@@ -793,7 +821,15 @@
         \ifnum\value{NumberOfChildren}>0%
             \foreach \n in {1,...,\theNumberOfChildren}{
                 \pgfmathsetmacro{\dyChildren}{\pgfkeysvalueof{/genogram/generation distance}/2+\pgfkeysvalueof{/genogram/children generation add distance below}}
-                \coordinate (childPos) at ($(gen@husband@below)!{(-0.5+\n)/\theNumberOfChildren}!(gen@wife@below)-(0,\dyChildren pt)$);
+                \ifnum\value{NumberOfChildren}=1
+                    %Single child always in the middle
+                    \coordinate (childPos) at ($(gen@husband@below)!0.5!(gen@wife@below)-(0,\dyChildren pt)$);
+                \else
+                    %First and last child on the boundaries
+                    \path coordinate (firstChild) at ($(gen@husband@below)+(\pgfkeysvalueof{/genogram/children outer space},0)$)
+                          coordinate (lastChild)  at ($(gen@wife@below)-(\pgfkeysvalueof{/genogram/children outer space},0)$)
+                          coordinate (childPos) at ($(firstChild)!{(\n-1)/(\theNumberOfChildren-1)}!(lastChild)-(0,\dyChildren pt)$);
+                \fi
                 \internal@drawElement[at=(childPos)]{/couple/child\n}{gen@}
                 \internal@adjustChildrenNodes{gen@child\n @}
                 \draw (gen@child\n.north) -- (gen@child\n @above);
@@ -801,26 +837,26 @@
         \fi
         %Draw parents of husband assuming as it should be that if one is defined, both are (see \internal@parent command)
         \if@husband@mother@set
-            \internal@drawElement[at={($(gen@husband@above -| firstHusbandPerson)+(-\husbandPeopleDistance/2,\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/husband/father}{gen@husband@}
+            \internal@drawElement[at={($(gen@husband@above -| firstHusbandPerson)+(-\pgfkeysvalueof{/genogram/husband people outer space},\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/husband/father}{gen@husband@}
             \internal@drawElement[at={($(gen@husband@father)+(\pgfkeysvalueof{/genogram/husband parents distance},0)$)}]{/couple/husband/mother}{gen@husband@}
             \draw[\pgfkeysvalueof{/couple/husband/parents/status drawing style}] (gen@husband@father.south) -- (gen@husband@father@below) -- (gen@husband@mother@below) -- (gen@husband@mother.south);
             \draw (gen@husband) -- (gen@husband@above);
         \fi
         %Draw parents of wife assuming as it should be that if one is defined, both are (see \internal@parent command)
         \if@wife@mother@set
-            \internal@drawElement[at={($(gen@wife@above -| firstWifePerson)+(-\wifePeopleDistance/2,\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/wife/father}{gen@wife@}
+            \internal@drawElement[at={($(gen@wife@above -| firstWifePerson)+(-\pgfkeysvalueof{/genogram/wife people outer space},\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/wife/father}{gen@wife@}
             \internal@drawElement[at={($(gen@wife@father)+(\pgfkeysvalueof{/genogram/wife parents distance},0)$)}]{/couple/wife/mother}{gen@wife@}
             \draw[\pgfkeysvalueof{/couple/wife/parents/status drawing style}] (gen@wife@father.south) -- (gen@wife@father@below) -- (gen@wife@mother@below) -- (gen@wife@mother.south);
             \draw (gen@wife) -- (gen@wife@above);
         \fi
         %Connect husband and/or wife to siblings in case no parents have been specified and there are siblings
-        \ifnum\value{NumberOfHusbandSiblings}=0\else
+        \ifnum\value{NumberOfHusbandSiblings}>0
             \if@husband@mother@set\else %parents go together so just one if is OK
                 \draw (gen@husband) -- (gen@husband@above);
                 \draw ($(firstHusbandPerson)+(0,\pgfkeysvalueof{/genogram/generation distance}/2)$) -- ($(lastHusbandPerson)+(0,\pgfkeysvalueof{/genogram/generation distance}/2)$);
             \fi
         \fi
-        \ifnum\value{NumberOfWifeSiblings}=0\else
+        \ifnum\value{NumberOfWifeSiblings}>0
             \if@wife@mother@set\else %parents go together so just one if is OK
                 \draw (gen@wife) -- (gen@wife@above);
                 \draw ($(firstWifePerson)+(0,\pgfkeysvalueof{/genogram/generation distance}/2)$) -- ($(lastWifePerson)+(0,\pgfkeysvalueof{/genogram/generation distance}/2)$);
