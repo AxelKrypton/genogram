@@ -14,11 +14,11 @@
 \crefname{figure}{Figure}{Figures}
 \crefname{section}{Section}{Sections}
 
-\newcommand{\versionnumber}{2.0}
+\newcommand{\versionnumber}{1.0b}
 \title{The \pn\ package: simply draw simple genograms}
 \author{%
     \begin{tabular}{c}
-        Alessandro Sciarra\\ {\small 22.03.2019}\\ \texttt{v\versionnumber}
+        Alessandro Sciarra\\ {\small in progress}\\ \texttt{v\versionnumber}
     \end{tabular}
 }
 
@@ -216,15 +216,59 @@ You might need to stretch or shrink the vertical line below each brother- or sis
 \intextmarginnote{\key{siblings generation add distance below}:}
 You might need to stretch or shrink the vertical line above each nephew and niece; specify a positive or negative distance, respectively, which will be added to it. The default value is \default{-3mm}.
 
+\intextmarginnote{\key{husband people outer space}:}
+This key may be used to change the \emph{horizontal} distance between the outermost people at the husband level (either the husband or his siblings) and the husband's parents. Brothers- or sisters-in-law are not considered here. Note that both negative or too-large-positive values are accepted, but they probably lead to an unwanted result. The default value is \default{2em}.
+
+\intextmarginnote{\key{wife people outer space}:}
+This key may be used to change the \emph{horizontal} distance between the outermost people at the wife level (either the wife or her siblings) and the wife's parents. Brothers- or sisters-in-law are not considered here. Note that both negative or too-large-positive values are accepted, but they probably lead to an unwanted result. The default value is \default{2em}.
+
+\intextmarginnote{\key{niblings outer space}:}
+This key may be used to change the \emph{horizontal} distance between the outermost niece(s) or nephew(s) and their parents. This key has no effect if only one nephew/niece is present. Note that both negative or too-large-positive values are accepted, but they probably lead to an unwanted result. The default value is \default{1em}.
+
+\intextmarginnote{\key{children outer space}:}
+This key may be used to change the \emph{horizontal} distance between the outermost children and their parents. This key has no effect is only one child is present. Note that both negative or too-large-positive values are accepted, but they probably lead to an unwanted result. The default value is \default{1em}.
 
 \begin{center}\rule{0.5\textwidth}{1pt}\end{center}
 
 \begingroup\small\marginlabel{\textcolor{DarkBlue}{\underline{\textsc{Advanced}}:}}
 To offer to more advanced users the possibility to customise the \texttt{tikzpicture} even further, you can use the \command{addTikzGlobalOptions} command in order to specify global TikZ options.
-For instance, use \texttt{\char`\\addTikzGlobalOptions\string{framed\string}} to add a frame to your genogram.
+For instance, use
+\begin{center}
+    \ttfamily\char`\\addTikzGlobalOptions\string{framed\string}
+\end{center}
+to add a frame to your genogram.
 \endgroup
 
+\begin{center}\rule{0.5\textwidth}{1pt}\end{center}
 
+\section{The code to produce \cref{fig:genogram} {\scriptsize(without printing commands)}}\label{sec:code}
+
+\marginlabel{\vspace{3.5mm} Black and white:}
+\begin{verbatim}
+  \documentclass[border=1mm]{standalone}
+  \usepackage{genogram}
+
+  \begin{document}
+    \brother[of=husband, age=35, name=Bruce]
+    \sisterInLaw[of=husband, age=32, name=Selina]
+    \nephew[of=husband, age=9, name=Robin]
+    \husband[name=Clark, age=30, status=not married]
+    \sister[of=wife, age=36, name=Lucy]
+    \wife[age=31, name=Lois]
+    \son[age=7, name=Tony]
+    \daughter[age=5, name=Pepper]
+    \mother[of=wife, age=65, name=Ella]
+    \father[of=wife, age=68, name=Sam]
+    \mother[of=husband, dead, age=25, name=Lara]
+    \father[of=husband, dead, age=32, name=Thomas, status=divorced]
+    \setBeforeDrawing[husband parents distance=12em,
+                      couple distance=20em, children outer space=6em,
+                      siblings generation add distance below=-5mm]
+    \addTikzGlobalOptions{framed}
+    \drawGenogram
+  \end{document}
+\end{verbatim}
+\begingroup\small
 
 
 \newpage
@@ -239,13 +283,8 @@ For instance, use \texttt{\char`\\addTikzGlobalOptions\string{framed\string}} to
 \end{fullpage}
 \global\pdfpageattr\expandafter{\the\pdfpageattr/Rotate 0}
 
-\section{The code to produce \cref{fig:genogram} {\scriptsize(without printing commands)}}\label{sec:code}
 
-\vspace{-4mm}
 \begingroup\small
-
-
-%\vspace{-4mm}
 \marginlabel{\vspace{3.6mm}Coloured version:}
 \begin{verbatim}
   \documentclass[svgnames,border=1mm]{standalone}
@@ -260,7 +299,7 @@ For instance, use \texttt{\char`\\addTikzGlobalOptions\string{framed\string}} to
         of=husband, age=32, name=Selina,
         extra node feature={BlueViolet, fill=BlueViolet!10},
         extra label feature={text=BlueViolet}]
-    \niece[
+    \nephew[
         of=husband, age=9, name=Robin,
         extra node feature={OliveDrab, fill=OliveDrab!10},
         extra label feature={text=OliveDrab}]
@@ -277,11 +316,11 @@ For instance, use \texttt{\char`\\addTikzGlobalOptions\string{framed\string}} to
         extra node feature={violet, fill=violet!10},
         extra label feature={text=violet}]
     \son[
-        male, age=7, name=Tony,
+        age=7, name=Tony,
         extra node feature={orange, fill=orange!10},
         extra label feature={text=orange}]
     \daughter[
-        female, age=5, name=Pepper,
+        age=5, name=Pepper,
         extra node feature={blue, fill=blue!10},
         extra label feature={text=blue}]
     \mother[
@@ -302,36 +341,13 @@ For instance, use \texttt{\char`\\addTikzGlobalOptions\string{framed\string}} to
         extra label feature={text=FireBrick}]
     \setBeforeDrawing[
         husband parents distance=12em, couple distance=20em,
-        siblings generation add distance below=-5mm]
+        siblings generation add distance below=-5mm,
+        children outer space=6em]
     \addTikzGlobalOptions{framed}
     \drawGenogram
   \end{document}
 \end{verbatim}
 
-\marginlabel{\vspace{3.5mm} Black and white:}
-\begin{verbatim}
-  \documentclass[border=1mm]{standalone}
-  \usepackage{genogram}
-
-  \begin{document}
-    \brother[of=husband, age=35, name=Bruce]
-    \sisterInLaw[of=husband, age=32, name=Selina]
-    \niece[of=husband, age=9, name=Robin]
-    \husband[name=Clark, age=30, status=not married]
-    \sister[of=wife, age=36, name=Lucy]
-    \wife[age=31, name=Lois]
-    \son[male, age=7, name=Tony]
-    \daughter[female, age=5, name=Pepper]
-    \mother[of=wife, age=65, name=Ella]
-    \father[of=wife, age=68, name=Sam]
-    \mother[of=husband, dead, age=25, name=Lara]
-    \father[of=husband, dead, age=32, name=Thomas, status=divorced]
-    \setBeforeDrawing[husband parents distance=12em, couple distance=20em,
-                      siblings generation add distance below=-5mm]
-    \addTikzGlobalOptions{framed}
-    \drawGenogram
-  \end{document}
-\end{verbatim}
 \endgroup
 
 
