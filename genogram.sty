@@ -452,17 +452,17 @@
     },
     default/.style={%
         /genogram,
-        internal@extraTikzOptions/.initial={},
+        genogram@extraTikzOptions/.initial={},
         space around age/.initial=1pt,
         generation distance/.initial=3cm,
         children generation add distance below/.initial=0mm,
-        broken couple symbol height/.initial=1ex,
-        broken couple symbol width/.initial=0.5ex,
         siblings generation add distance above/.initial=-3mm,
         siblings generation add distance below/.initial=-3mm,
+        broken couple symbol height/.initial=1ex,
+        broken couple symbol width/.initial=0.5ex,
         husband people outer space/.initial = 2em,
         wife people outer space/.initial = 2em,
-        niblings outer space/.initial = -2em,
+        niblings outer space/.initial = 1em,
         children outer space/.initial = 3.75em,
         set keys with logic to default
     }
@@ -482,20 +482,20 @@
     \pgfqkeys{/couple/wife}{default,#1}\ignorespaces
 }
 
-\newcommand{\internal@child}[2][]{%
+\newcommand{\genogram@child}[2][]{%
     \stepcounter{NumberOfChildren}%
     \pgfqkeys{/couple/last child}{default,#2,#1}\ignorespaces
 }
 
 \newcommand{\son}[1][]{%
-    \internal@child[#1]{male}
+    \genogram@child[#1]{male}
 }
 
 \newcommand{\daughter}[1][]{%
-    \internal@child[#1]{female}
+    \genogram@child[#1]{female}
 }
 
-\newcommand{\internal@checkOfValue}{%
+\newcommand{\genogram@checkOfValue}{%
     % See https://ctan.org/pkg/pdftex?lang=de for \pdfstrcmp
     \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{husband}=0
     \else
@@ -511,12 +511,12 @@
     \fi
 }
 
-\newcommand{\internal@parent}[2][]{%
+\newcommand{\genogram@parent}[2][]{%
     \pgfkeys{/pgf/key filters/and/.install key filter={/pgf/key filters/defined}{/pgf/key filters/equals=/couple/of}}%
     \pgfkeys{/pgf/key filter handlers/append filtered to/.install key filter handler=\remainingoptions}%
     \def\remainingoptions{/couple/#2/.cd,default}% Prepare key list for later in \pgfkeysalsofrom
     \pgfqkeysfiltered{/couple}{#1}%
-    \internal@checkOfValue%
+    \genogram@checkOfValue%
     \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{husband}=0
         \if@husband@mother@set\else
             \pgfkeys{/couple/mother/default}%
@@ -538,19 +538,19 @@
 }
 
 \newcommand{\father}[1][]{%
-    \internal@parent[#1]{father}
+    \genogram@parent[#1]{father}
 }
 
 \newcommand{\mother}[1][]{%
-    \internal@parent[#1]{mother}
+    \genogram@parent[#1]{mother}
 }
 
-\newcommand{\internal@sibling}[2][]{%
+\newcommand{\genogram@sibling}[2][]{%
     \pgfkeys{/pgf/key filters/and/.install key filter={/pgf/key filters/defined}{/pgf/key filters/equals=/couple/of}}%
     \pgfkeys{/pgf/key filter handlers/append filtered to/.install key filter handler=\remainingoptions}%
     \def\remainingoptions{/couple/#2/.cd,default}% Prepare key list for later in \pgfkeysalsofrom
     \pgfqkeysfiltered{/couple}{#1}%
-    \internal@checkOfValue%
+    \genogram@checkOfValue%
     \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{husband}=0
         \stepcounter{NumberOfHusbandSiblings}%
         \stepcounter{NumberOfHusbandPeopleToDraw}%
@@ -564,14 +564,14 @@
 }
 
 \newcommand{\brother}[1][]{%
-    \internal@sibling[#1]{brother}
+    \genogram@sibling[#1]{brother}
 }
 
 \newcommand{\sister}[1][]{%
-    \internal@sibling[#1]{sister}
+    \genogram@sibling[#1]{sister}
 }
 
-\newcommand{\internal@missingPartner}[1]{%
+\newcommand{\genogram@missingPartner}[1]{%
     \PackageError{Genogram}{%
         Wrong use of the "#1InLaw" command!\MessageBreak
         Missing command before to which it should be referred!%
@@ -580,21 +580,21 @@
     }
 }
 
-\newcommand{\internal@siblinginlaw}[2][]{%
+\newcommand{\genogram@siblinginlaw}[2][]{%
     \pgfkeys{/pgf/key filters/and/.install key filter={/pgf/key filters/defined}{/pgf/key filters/equals=/couple/of}}%
     \pgfkeys{/pgf/key filter handlers/append filtered to/.install key filter handler=\remainingoptions}%
     \def\remainingoptions{/couple/#2 in law/.cd,default}% Prepare key list for later in \pgfkeysalsofrom
     \pgfqkeysfiltered{/couple}{#1}%
-    \internal@checkOfValue%
+    \genogram@checkOfValue%
     \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{husband}=0
         \ifnum\value{NumberOfHusbandSiblings}=0
-            \internal@missingPartner{#2}
+            \genogram@missingPartner{#2}
         \fi
         \stepcounter{NumberOfHusbandPeopleToDraw}%
         \pgfkeys{/couple/sibling number to be used=\theNumberOfHusbandSiblings}%
     \else
         \ifnum\value{NumberOfWifeSiblings}=0
-            \internal@missingPartner{#2}
+            \genogram@missingPartner{#2}
         \fi
         \stepcounter{NumberOfWifePeopleToDraw}%
         \pgfkeys{/couple/sibling number to be used=\theNumberOfWifeSiblings}%
@@ -603,19 +603,19 @@
 }
 
 \newcommand{\brotherInLaw}[1][]{%
-    \internal@siblinginlaw[#1]{brother}
+    \genogram@siblinginlaw[#1]{brother}
 }
 
 \newcommand{\sisterInLaw}[1][]{%
-    \internal@siblinginlaw[#1]{sister}
+    \genogram@siblinginlaw[#1]{sister}
 }
 
-\newcommand{\internal@nibling}[2][]{%
+\newcommand{\genogram@nibling}[2][]{%
     \pgfkeys{/pgf/key filters/and/.install key filter={/pgf/key filters/defined}{/pgf/key filters/equals=/couple/of}}%
     \pgfkeys{/pgf/key filter handlers/append filtered to/.install key filter handler=\remainingoptions}%
     \def\remainingoptions{/couple/nibling/.cd,default,#2}% Prepare key list for later in \pgfkeysalsofrom
     \pgfqkeysfiltered{/couple}{#1}%
-    \internal@checkOfValue%
+    \genogram@checkOfValue%
     \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/of}}{husband}=0
         \pgfkeys{/couple/sibling number to be used=\theNumberOfHusbandSiblings}%
     \else
@@ -625,11 +625,11 @@
 }
 
 \newcommand{\nephew}[1][]{%
-    \internal@nibling[#1]{male}
+    \genogram@nibling[#1]{male}
 }
 
 \newcommand{\niece}[1][]{%
-    \internal@nibling[#1]{female}
+    \genogram@nibling[#1]{female}
 }
 
 \newcommand{\setBeforeDrawing}[1][]{%
@@ -639,16 +639,16 @@
 
 \newcommand{\addTikzGlobalOptions}[1]{%
     \pgfkeys{%
-        /genogram/internal@extraTikzOptions/.style={#1}
+        /genogram/genogram@extraTikzOptions/.style={#1}
     }\ignorespaces
 }
 
-\newcommand{\internal@extraTikzCode}{}
+\newcommand{\genogram@extraTikzCode}{}
 \newcommand{\addToTikzpicture}[1]{%
-    \renewcommand{\internal@extraTikzCode}{#1}\ignorespaces
+    \renewcommand{\genogram@extraTikzCode}{#1}\ignorespaces
 }
 
-\newcommand{\internal@drawElement}[3][]{% #1=extra node options #2=key name, #3=prefix for node and additional coordinates
+\newcommand{\genogram@drawElement}[3][]{% #1=extra node options #2=key name, #3=prefix for node and additional coordinates
     \filename@parse{#2}
     \node[\pgfkeysvalueof{#2/sex}=\pgfkeysvalueof{#2/age}, name=#3\filename@base, \pgfkeysvalueof{#2/life status}, #2/extra node, #1];
     \node[anchor=south west, inner sep=0, inner ysep=1pt, font=\scriptsize,
@@ -660,15 +660,15 @@
     \coordinate (lastCoordinate) at (#3\filename@base.center);
 }
 
-\newcommand{\internal@adjustSiblingNodes}[1]{% #1=node name prefix
+\newcommand{\genogram@adjustSiblingNodes}[1]{% #1=node name prefix
     \coordinate (#1below) at ($(#1below)-(0,\pgfkeysvalueof{/genogram/siblings generation add distance above})$);
 }
 
-\newcommand{\internal@adjustNiblingNodes}[1]{% #1=node name prefix
+\newcommand{\genogram@adjustNiblingNodes}[1]{% #1=node name prefix
     \coordinate (#1above) at ($(#1above)+(0,\pgfkeysvalueof{/genogram/siblings generation add distance below})$);
 }
 
-\newcommand{\internal@adjustChildrenNodes}[1]{% #1=node name prefix
+\newcommand{\genogram@adjustChildrenNodes}[1]{% #1=node name prefix
     \coordinate (#1above) at ($(#1above)+(0,\pgfkeysvalueof{/genogram/children generation add distance below})$);
 }
 
@@ -677,7 +677,7 @@
     %Since we want to draw elements left to right in the genogram respecting the order in which they have been specified
     %(age is usually decreasing left to right), then we draw first the couple generation, treating parent/wife and siblings
     %together. Actually if siblings have partners they are also drawn here.
-    \begin{tikzpicture}[/genogram/internal@extraTikzOptions]
+    \begin{tikzpicture}[/genogram/genogram@extraTikzOptions]
         %Draw husband with his siblings plus in case brother/sister in law
         \ifnum\value{NumberOfHusbandSiblings}=0%
             \pgfmathsetlengthmacro{\husbandPeopleDistance}{\pgfkeysvalueof{/genogram/husband parents distance}}
@@ -689,7 +689,7 @@
               coordinate (lastCoordinate) at (firstHusbandPerson);
         \ifnum\value{NumberOfHusbandSiblings}>0%
             \ifnum\pgfkeysvalueof{/couple/husband/after sibling}=0
-                \internal@drawElement[at=(lastCoordinate)]{/couple/husband}{gen@}
+                \genogram@drawElement[at=(lastCoordinate)]{/couple/husband}{gen@}
             \else
                 %Correct last coordinate by the increment by \wifePeopleDistance in order to have
                 %the correct distance between the husband and wife people
@@ -697,16 +697,16 @@
             \fi
             \foreach \n in {1,...,\theNumberOfHusbandSiblings}{
                 %Draw sibling with partner if any respecting male-left-to-female notation
-                \internal@drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n}{gen@husband@}
-                \internal@adjustSiblingNodes{gen@husband@sibling\n @}
+                \genogram@drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n}{gen@husband@}
+                \genogram@adjustSiblingNodes{gen@husband@sibling\n @}
                 \ifnum\pgfkeysvalueof{/couple/husband/sibling\n/has partner}=1
                     \coordinate (tmp) at (lastCoordinate);
                     \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/husband/sibling\n/sex}}{male}=0
-                        \internal@drawElement[at={($(lastCoordinate)+(0.5*\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n/partner}{gen@husband@sibling\n @}
+                        \genogram@drawElement[at={($(lastCoordinate)+(0.5*\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n/partner}{gen@husband@sibling\n @}
                     \else
-                        \internal@drawElement[at={($(lastCoordinate)-(0.5*\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n/partner}{gen@husband@sibling\n @}
+                        \genogram@drawElement[at={($(lastCoordinate)-(0.5*\husbandPeopleDistance,0)$)}]{/couple/husband/sibling\n/partner}{gen@husband@sibling\n @}
                     \fi
-                    \internal@adjustSiblingNodes{gen@husband@sibling\n @partner@}
+                    \genogram@adjustSiblingNodes{gen@husband@sibling\n @partner@}
                     %Draw niblings if any!
                     \pgfmathsetmacro{\theNumberOfNiblings}{\pgfkeysvalueof{/couple/husband/sibling\n/number of children}}
                     \ifnum\theNumberOfNiblings>0
@@ -721,8 +721,8 @@
                                       coordinate (lastNibling)  at ($(gen@husband@sibling\n @partner@below)-(\pgfkeysvalueof{/genogram/niblings outer space},0)$)
                                       coordinate (niblingPos)   at ($(firstNibling)!{(\c-1)/(\theNumberOfNiblings-1)}!(lastNibling)-(0,\dyNiblings pt)$);
                             \fi
-                            \internal@drawElement[at={(niblingPos)}]{/couple/husband/sibling\n/child\c}{gen@husband@sibling\n @}
-                            \internal@adjustNiblingNodes{gen@husband@sibling\n @child\c @}
+                            \genogram@drawElement[at={(niblingPos)}]{/couple/husband/sibling\n/child\c}{gen@husband@sibling\n @}
+                            \genogram@adjustNiblingNodes{gen@husband@sibling\n @child\c @}
                             \draw (gen@husband@sibling\n @child\c.north) --
                                   (gen@husband@sibling\n @child\c.north |- gen@husband@sibling\n @below);
                         }
@@ -731,7 +731,7 @@
                     \coordinate (lastCoordinate) at (tmp);
                 \fi
                 \ifnum\pgfkeysvalueof{/couple/husband/after sibling}=\n
-                    \internal@drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband}{gen@}
+                    \genogram@drawElement[at={($(lastCoordinate)+(\husbandPeopleDistance,0)$)}]{/couple/husband}{gen@}
                 \fi
                 %Draw connections
                 \draw (gen@husband@sibling\n.north) -- (gen@husband@sibling\n @above);
@@ -741,7 +741,7 @@
                 \fi
             }
         \else
-            \internal@drawElement[at=(lastCoordinate)]{/couple/husband}{gen@}
+            \genogram@drawElement[at=(lastCoordinate)]{/couple/husband}{gen@}
         \fi
         \coordinate (lastHusbandPerson) at (lastCoordinate);
         %Draw wife with her siblings plus in case brother/sister in law
@@ -762,7 +762,7 @@
               coordinate (firstWifePerson) at (lastCoordinate);
         \ifnum\value{NumberOfWifeSiblings}>0%
             \ifnum\pgfkeysvalueof{/couple/wife/after sibling}=0
-                \internal@drawElement[at=(lastCoordinate)]{/couple/wife}{gen@}
+                \genogram@drawElement[at=(lastCoordinate)]{/couple/wife}{gen@}
             \else
                 %Correct last coordinate by the increment by \wifePeopleDistance in order to have
                 %the correct distance between the husband and wife people
@@ -770,16 +770,16 @@
             \fi
             \foreach \n in {1,...,\theNumberOfWifeSiblings}{
                 %Draw sibling with partner if any respecting male-left-to-female notation
-                \internal@drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n}{gen@wife@}
-                \internal@adjustSiblingNodes{gen@wife@sibling\n @}
+                \genogram@drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n}{gen@wife@}
+                \genogram@adjustSiblingNodes{gen@wife@sibling\n @}
                 \ifnum\pgfkeysvalueof{/couple/wife/sibling\n/has partner}=1
                     \coordinate (tmp) at (lastCoordinate);
                     \ifnum\pdfstrcmp{\pgfkeysvalueof{/couple/wife/sibling\n/sex}}{male}=0
-                        \internal@drawElement[at={($(lastCoordinate)+(0.5*\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n/partner}{gen@wife@sibling\n @}
+                        \genogram@drawElement[at={($(lastCoordinate)+(0.5*\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n/partner}{gen@wife@sibling\n @}
                     \else
-                        \internal@drawElement[at={($(lastCoordinate)-(0.5*\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n/partner}{gen@wife@sibling\n @}
+                        \genogram@drawElement[at={($(lastCoordinate)-(0.5*\wifePeopleDistance,0)$)}]{/couple/wife/sibling\n/partner}{gen@wife@sibling\n @}
                     \fi
-                    \internal@adjustSiblingNodes{gen@wife@sibling\n @partner@}
+                    \genogram@adjustSiblingNodes{gen@wife@sibling\n @partner@}
                     %Draw niblings if any!
                     \pgfmathsetmacro{\theNumberOfNiblings}{\pgfkeysvalueof{/couple/wife/sibling\n/number of children}}
                     \ifnum\theNumberOfNiblings>0
@@ -792,8 +792,8 @@
                                 %First and last nibling on the boundaries
                                 \coordinate (niblingPos) at ($(gen@wife@sibling\n @below)!{(\c-1)/(\theNumberOfNiblings-1)}!(gen@wife@sibling\n @partner@below)-(0,\dyNiblings pt)$);
                             \fi
-                            \internal@drawElement[at={(niblingPos)}]{/couple/wife/sibling\n/child\c}{gen@wife@sibling\n @}
-                            \internal@adjustNiblingNodes{gen@wife@sibling\n @child\c @}
+                            \genogram@drawElement[at={(niblingPos)}]{/couple/wife/sibling\n/child\c}{gen@wife@sibling\n @}
+                            \genogram@adjustNiblingNodes{gen@wife@sibling\n @child\c @}
                             \draw (gen@wife@sibling\n @child\c.north) --
                                   (gen@wife@sibling\n @child\c.north |- gen@wife@sibling\n @below);
                         }
@@ -802,7 +802,7 @@
                     \coordinate (lastCoordinate) at (tmp);
                 \fi
                 \ifnum\pgfkeysvalueof{/couple/wife/after sibling}=\n
-                    \internal@drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife}{gen@}
+                    \genogram@drawElement[at={($(lastCoordinate)+(\wifePeopleDistance,0)$)}]{/couple/wife}{gen@}
                 \fi
                 %Draw connections
                 \draw (gen@wife@sibling\n.north) -- (gen@wife@sibling\n @above);
@@ -812,7 +812,7 @@
                 \fi
             }
         \else
-            \internal@drawElement[at=(lastCoordinate)]{/couple/wife}{gen@}
+            \genogram@drawElement[at=(lastCoordinate)]{/couple/wife}{gen@}
         \fi
         \coordinate (lastWifePerson) at (lastCoordinate);
         %Now that the couple has been drawn, connect it
@@ -830,22 +830,22 @@
                           coordinate (lastChild)  at ($(gen@wife@below)-(\pgfkeysvalueof{/genogram/children outer space},0)$)
                           coordinate (childPos) at ($(firstChild)!{(\n-1)/(\theNumberOfChildren-1)}!(lastChild)-(0,\dyChildren pt)$);
                 \fi
-                \internal@drawElement[at=(childPos)]{/couple/child\n}{gen@}
-                \internal@adjustChildrenNodes{gen@child\n @}
+                \genogram@drawElement[at=(childPos)]{/couple/child\n}{gen@}
+                \genogram@adjustChildrenNodes{gen@child\n @}
                 \draw (gen@child\n.north) -- (gen@child\n @above);
             }
         \fi
-        %Draw parents of husband assuming as it should be that if one is defined, both are (see \internal@parent command)
+        %Draw parents of husband assuming as it should be that if one is defined, both are (see \genogram@parent command)
         \if@husband@mother@set
-            \internal@drawElement[at={($(gen@husband@above -| firstHusbandPerson)+(-\pgfkeysvalueof{/genogram/husband people outer space},\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/husband/father}{gen@husband@}
-            \internal@drawElement[at={($(gen@husband@father)+(\pgfkeysvalueof{/genogram/husband parents distance},0)$)}]{/couple/husband/mother}{gen@husband@}
+            \genogram@drawElement[at={($(gen@husband@above -| firstHusbandPerson)+(-\pgfkeysvalueof{/genogram/husband people outer space},\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/husband/father}{gen@husband@}
+            \genogram@drawElement[at={($(gen@husband@father)+(\pgfkeysvalueof{/genogram/husband parents distance},0)$)}]{/couple/husband/mother}{gen@husband@}
             \draw[\pgfkeysvalueof{/couple/husband/parents/status drawing style}] (gen@husband@father.south) -- (gen@husband@father@below) -- (gen@husband@mother@below) -- (gen@husband@mother.south);
             \draw (gen@husband) -- (gen@husband@above);
         \fi
-        %Draw parents of wife assuming as it should be that if one is defined, both are (see \internal@parent command)
+        %Draw parents of wife assuming as it should be that if one is defined, both are (see \genogram@parent command)
         \if@wife@mother@set
-            \internal@drawElement[at={($(gen@wife@above -| firstWifePerson)+(-\pgfkeysvalueof{/genogram/wife people outer space},\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/wife/father}{gen@wife@}
-            \internal@drawElement[at={($(gen@wife@father)+(\pgfkeysvalueof{/genogram/wife parents distance},0)$)}]{/couple/wife/mother}{gen@wife@}
+            \genogram@drawElement[at={($(gen@wife@above -| firstWifePerson)+(-\pgfkeysvalueof{/genogram/wife people outer space},\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/wife/father}{gen@wife@}
+            \genogram@drawElement[at={($(gen@wife@father)+(\pgfkeysvalueof{/genogram/wife parents distance},0)$)}]{/couple/wife/mother}{gen@wife@}
             \draw[\pgfkeysvalueof{/couple/wife/parents/status drawing style}] (gen@wife@father.south) -- (gen@wife@father@below) -- (gen@wife@mother@below) -- (gen@wife@mother.south);
             \draw (gen@wife) -- (gen@wife@above);
         \fi
@@ -863,6 +863,6 @@
             \fi
         \fi
         %Finish with whatever the user wishes
-        \internal@extraTikzCode
+        \genogram@extraTikzCode
     \end{tikzpicture}\ignorespaces
 }
