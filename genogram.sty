@@ -734,7 +734,7 @@
         \pgfmathparse{%
             \pgfkeysvalueof{/genogram/couple distance}
             -(\theNumberOfHusbandSiblings - \pgfkeysvalueof{/couple/husband/after sibling})*\husbandPeopleDistance
-            -\pgfkeysvalueof{/couple/wife/after sibling}*\husbandPeopleDistance
+            -\pgfkeysvalueof{/couple/wife/after sibling}*\wifePeopleDistance
         }
         \path coordinate (lastCoordinate) at ($(lastCoordinate)+(\pgfmathresult pt,0)$)
               coordinate (firstWifePerson) at (lastCoordinate);
