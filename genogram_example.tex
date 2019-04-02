@@ -12,7 +12,7 @@
         extra node feature={BlueViolet, fill=BlueViolet!10},
         extra label feature={text=BlueViolet}
     ]
-    \niece[
+    \nephew[
         of=husband, age=9, name=Robin,
         extra node feature={OliveDrab, fill=OliveDrab!10},
         extra label feature={text=OliveDrab}
@@ -33,12 +33,12 @@
         extra label feature={text=violet}
     ]
     \son[
-        male, age=7, name=Tony,
+        age=7, name=Tony,
         extra node feature={orange, fill=orange!10},
         extra label feature={text=orange}
     ]
     \daughter[
-        female, age=5, name=Pepper,
+        age=5, name=Pepper,
         extra node feature={blue, fill=blue!10},
         extra label feature={text=blue}
     ]
@@ -65,7 +65,8 @@
     \setBeforeDrawing[
         husband parents distance=12em,
         couple distance=20em,
-        siblings generation add distance below=-5mm
+        siblings generation add distance below=-5mm,
+        children outer space=6em
     ]
     \addTikzGlobalOptions{framed}
     \addToTikzpicture{%
@@ -83,8 +84,8 @@
                     &name=Lois]
                 \end{tabular}
             };
-            \node[text=orange, left = 1mm of gen@child1] {\char`\\child[male, age=3, name=Tony]};
-            \node[text=blue,    right = 1mm of gen@child2] {\char`\\child[female, age=5, name=Pepper]};
+            \node[text=orange, left = 1mm of gen@child1] {\char`\\son[age=3, name=Tony]};
+            \node[text=blue,    right = 1mm of gen@child2] {\char`\\daughter[age=5, name=Pepper]};
             \node[text=magenta, below = 0mm of gen@wife@sibling1] {
                 \begin{tabular}{r@{}l}
                     \char`\\sister[ & of=wife,\\
