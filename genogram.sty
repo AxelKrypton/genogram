@@ -849,14 +849,24 @@
         \fi
         %Draw parents of husband assuming as it should be that if one is defined, both are (see \genogram@parent command)
         \if@husband@mother@set
-            \genogram@drawElement[at={($(gen@husband@above -| firstHusbandPerson)+(-\pgfkeysvalueof{/genogram/husband people outer space},\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/husband/father}{gen@husband@}
+            \ifnum\value{NumberOfHusbandSiblings}=0
+                \coordinate (husbandFather) at ($(gen@husband@above)+(-\pgfkeysvalueof{/genogram/husband parents distance}/2,\pgfkeysvalueof{/genogram/generation distance}/2)$);
+            \else
+                \coordinate (husbandFather) at ($(gen@husband@above -| firstHusbandPerson)+(-\pgfkeysvalueof{/genogram/husband people outer space},\pgfkeysvalueof{/genogram/generation distance}/2)$);
+            \fi
+            \genogram@drawElement[at=(husbandFather)]{/couple/husband/father}{gen@husband@}
             \genogram@drawElement[at={($(gen@husband@father)+(\pgfkeysvalueof{/genogram/husband parents distance},0)$)}]{/couple/husband/mother}{gen@husband@}
             \draw[\pgfkeysvalueof{/couple/husband/parents/status drawing style}] (gen@husband@father.south) -- (gen@husband@father@below) -- (gen@husband@mother@below) -- (gen@husband@mother.south);
             \draw (gen@husband) -- (gen@husband@above);
         \fi
         %Draw parents of wife assuming as it should be that if one is defined, both are (see \genogram@parent command)
         \if@wife@mother@set
-            \genogram@drawElement[at={($(gen@wife@above -| firstWifePerson)+(-\pgfkeysvalueof{/genogram/wife people outer space},\pgfkeysvalueof{/genogram/generation distance}/2)$)}]{/couple/wife/father}{gen@wife@}
+            \ifnum\value{NumberOfWifeSiblings}=0
+                \coordinate (wifeFather) at ($(gen@wife@above)+(-\pgfkeysvalueof{/genogram/wife parents distance}/2,\pgfkeysvalueof{/genogram/generation distance}/2)$);
+            \else
+                \coordinate (wifeFather) at ($(gen@wife@above -| firstWifePerson)+(-\pgfkeysvalueof{/genogram/wife people outer space},\pgfkeysvalueof{/genogram/generation distance}/2)$);
+            \fi
+            \genogram@drawElement[at=(wifeFather)]{/couple/wife/father}{gen@wife@}
             \genogram@drawElement[at={($(gen@wife@father)+(\pgfkeysvalueof{/genogram/wife parents distance},0)$)}]{/couple/wife/mother}{gen@wife@}
             \draw[\pgfkeysvalueof{/couple/wife/parents/status drawing style}] (gen@wife@father.south) -- (gen@wife@father@below) -- (gen@wife@mother@below) -- (gen@wife@mother.south);
             \draw (gen@wife) -- (gen@wife@above);
