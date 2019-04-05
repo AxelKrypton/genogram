@@ -672,6 +672,28 @@
     \coordinate (#1above) at ($(#1above)+(0,\pgfkeysvalueof{/genogram/children generation add distance below})$);
 }
 
+% #1: node or coordinate A
+% #2: node or coordinate B
+% #3: Code to exectute if A is left of B
+% #4: Code to exectute if A is right of B
+\long\def\genogram@ifLeft(#1)of(#2)#3#4{%
+  \tikz@scan@one@point\pgfutil@firstofone(#1)\relax%
+  \pgf@xa=\pgf@x%
+  \tikz@scan@one@point\pgfutil@firstofone(#2)\relax%
+  \ifdim\pgf@xa<\pgf@x\relax#3\else#4\fi
+}
+
+% #1: node or coordinate A
+% #2: node or coordinate B
+% #3: Code to exectute if A is right of B
+% #4: Code to exectute if A is left of B
+\long\def\genogram@ifRight(#1)of(#2)#3#4{%
+  \tikz@scan@one@point\pgfutil@firstofone(#1)\relax%
+  \pgf@xa=\pgf@x%
+  \tikz@scan@one@point\pgfutil@firstofone(#2)\relax%
+  \ifdim\pgf@xa>\pgf@x\relax#3\else#4\fi
+}
+
 \newcommand{\drawGenogram}[1][]{%
     \if@genogram@default@were@set\else\pgfkeys{/genogram/default}\fi%
     %Since we want to draw elements left to right in the genogram respecting the order in which they have been specified
