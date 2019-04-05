@@ -18,6 +18,10 @@ In particular (even though this is not a strict, always respected rule), given a
 
 ## [Unreleased]
 
+---
+
+## [Version 2.0] &nbsp;&nbsp; <sub><sup>05 April 2019</sub></sup>
+
 * :heavy_plus_sign: Add keys to customize outer space of people with respect to their parents.
 * :heavy_plus_sign: Add `\addTikzGlobalOptions` command.
 * :heavy_minus_sign: Genogram without frame by default.
@@ -38,4 +42,5 @@ This has been the first release of the repository.
 
 
 [Unreleased]: https://github.com/AxelKrypton/genogram/compare/v1.0...HEAD
+[Version 2.0]: https://github.com/AxelKrypton/genogram/releases/tag/v2.0
 [Version 1.0]: https://github.com/AxelKrypton/genogram/releases/tag/v1.0
