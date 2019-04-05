@@ -51,7 +51,7 @@ The Reader is then encouraged to have a look to \cref{fig:genogram} at \cpageref
 
 \section{Package usage}
 
-Although it is not at necessary, you might consider to use this package in combination with the \texttt{standalone} class.
+Although it is not necessary, you might consider to use this package in combination with the \texttt{standalone} class.
 The idea behind this choice would be to produce a genogram to be then possibly included as figure in another document.
 A minimal, to-be-completed example might be the following.
 \begin{verbatim}
@@ -77,7 +77,7 @@ Few rules exist and it is important to know them to achieve what desired.
 
 \begin{itemize}
     \item In any couple, the man is always drawn left and the woman right.
-    \item The order in which siblings are drawn is exactly as specified by the user
+    \item The order in which siblings are drawn is exactly as specified by the user.
           This means that siblings of the husband specified before (after) the husband will be drawn left (right) of him.
           The same applies to the wife and her siblings.
     \item Children, nephews and nieces of the couple are as well drawn left to right respecting the order in which they were specified by the user.
@@ -91,7 +91,7 @@ Possible keys, which will be mentioned later in the command description are the 
     \kitem{age} It is used to add the age of the person in the genogram.
     \kitem{name} It is used to add the name of the person in the genogram.
     \kitem{status} Possible values are \texttt{married}, \texttt{not married}, \texttt{separated} or \texttt{divorced}. This key determines how the couples in the genogram are connected.
-    \kitem{of} Possible values are \texttt{wife} or \texttt{husband}. Use this key to specify who the command you are using refer to.
+    \kitem{of} Possible values are \texttt{wife} or \texttt{husband}. Use this key to specify who the command you are using refers to.
     \item[\key{dead}] It is used to specify that the command you are using refers to a dead person.
     \item[\key{male} or \key{female}] It is used to specify the sex of the element the command you are using refers to.
                                       Although they are available, there should normally be no need to use them, since any command has a default sex which is implied by the command name (e.g. the default sex of a sister is female.)
@@ -123,7 +123,7 @@ At the moment there is no key to customise paths.
 \subsection*{The main commands}
 
 Commands are in general used to add elements to the genogram.
-Their names are self-explanatory and the following list provide the missing piece of information: Which key can be passed to which command.
+Their names are self-explanatory and the following list provides the missing piece of information: Which keys can be passed to which command.
 Please, keep in mind that the default sex of each command is the one suggested by the command name.
 However, just in case of special needs, all commands accept the \key{male} and \key{female} keys\footnote{Specifying the default sex is accepted, but it has no effect, unless the key is specified after having given the opposite sex key. Definitely a contrived scenario.}.
 
@@ -187,46 +187,70 @@ In this case the \texttt{<value>} is expected to be a length, i.e. a number foll
 Possible keys are the following.
 
 \intextmarginnote{\key{space around age}:}
-This key refers to the white space around all ages in the genogram (between the number and either the square or the circle). The default value is \default{1pt}.
+This key refers to the white space around all ages in the genogram (between the number and either the square or the circle).
+The default value is \default{1pt}.
 
 \intextmarginnote{\key{generation distance}:}
-This is the \emph{vertical} distance between the centre of the shapes belonging to contiguous generations (e.g. the couple and the children). The default value is \default{3cm}.
+This is the \emph{vertical} distance between the centre of the shapes belonging to contiguous generations (e.g. the couple and the children).
+The default value is \default{3cm}.
 
 \intextmarginnote{\key{couple distance}:}
-This is the \emph{horizontal} distance between the centre of the husband and wife shapes. The default value is \default{10em} if the couple has less than 2 children, otherwise it is \default{5em} times the number of children.
+This is the \emph{horizontal} distance between the centre of the husband and wife shapes.
+The default value is \default{10em} if the couple has less than 2 children, otherwise it is \default{5em} times the number of children.
 
 \intextmarginnote{\key{husband parents distance}:}
-This is the \emph{horizontal} distance between the centre of the husband parents shapes. The default value is \default{5em} times the number of the husband siblings increased by $1$.
+This is the \emph{horizontal} distance between the centre of the husband parents shapes.
+The default value is \default{5em} times the number of the husband siblings increased by $1$.
 
 \intextmarginnote{\key{wife parents distance}:}
-This is the \emph{horizontal} distance between the centre of the wife parents shapes. The default value is \default{5em} times the number of the wife siblings increased by $1$.
+This is the \emph{horizontal} distance between the centre of the wife parents shapes.
+The default value is \default{5em} times the number of the wife siblings increased by $1$.
 
 \intextmarginnote{\key{broken couple symbol height}:}
-For separated or divorced couple, you can change the height of the correspondent symbol using this key. The default value is \default{1ex}.
+For separated or divorced couple, you can change the height of the correspondent symbol using this key.
+The default value is \default{1ex}.
 
 \intextmarginnote{\key{broken couple symbol width}:}
-For separated or divorced couple, you can change the width of the correspondent symbol using this key. The default value is \default{0.5ex}.
+For separated or divorced couple, you can change the width of the correspondent symbol using this key.
+The default value is \default{0.5ex}.
 
 \intextmarginnote{\key{children generation add distance below}:}
-You might need to stretch or shrink the vertical line above each children; specify a positive or negative distance, respectively, which will be added to it. The default value is \default{0mm}.
+You might need to stretch or shrink the vertical line above each children; specify a positive or negative distance, respectively, which will be added to it.
+The default value is \default{0mm}.
 
 \intextmarginnote{\key{siblings generation add distance above}:}
-You might need to stretch or shrink the vertical line below each brother- or sister-in-law and their partners; specify a positive or negative distance, respectively, which will be added to it. The default value is \default{-3mm}.
+You might need to stretch or shrink the vertical line below each brother- or sister-in-law and their partners; specify a positive or negative distance, respectively, which will be added to it.
+The default value is \default{-3mm}.
 
 \intextmarginnote{\key{siblings generation add distance below}:}
-You might need to stretch or shrink the vertical line above each nephew and niece; specify a positive or negative distance, respectively, which will be added to it. The default value is \default{-3mm}.
+You might need to stretch or shrink the vertical line above each nephew and niece; specify a positive or negative distance, respectively, which will be added to it.
+The default value is \default{-3mm}.
 
 \intextmarginnote{\key{husband people outer space}:}
-This key may be used to change the \emph{horizontal} distance between the outermost people at the husband level (either the husband or his siblings) and the husband's parents. Brothers- or sisters-in-law are not considered here. Note that both negative or too-large-positive values are accepted, but they probably lead to an unwanted result. The default value is \default{2em}.
+This key may be used to change the \emph{horizontal} distance between the outermost people at the husband level (either the husband or his siblings) and the husband's parents.
+Brothers- or sisters-in-law are not considered here.
+This key has no effect if the husband has no siblings.
+Note that both negative or too-large-positive values are accepted, but they probably lead to an unwanted result.
+The default value is \default{2em}.
 
 \intextmarginnote{\key{wife people outer space}:}
-This key may be used to change the \emph{horizontal} distance between the outermost people at the wife level (either the wife or her siblings) and the wife's parents. Brothers- or sisters-in-law are not considered here. Note that both negative or too-large-positive values are accepted, but they probably lead to an unwanted result. The default value is \default{2em}.
+This key may be used to change the \emph{horizontal} distance between the outermost people at the wife level (either the wife or her siblings) and the wife's parents.
+Brothers- or sisters-in-law are not considered here.
+This key has no effect if the wife has no siblings.
+Note that both negative or too-large-positive values are accepted, but they probably lead to an unwanted result.
+The default value is \default{2em}.
 
 \intextmarginnote{\key{niblings outer space}:}
-This key may be used to change the \emph{horizontal} distance between the outermost niece(s) or nephew(s) and their parents. This key has no effect if only one nephew/niece is present. Note that both negative or too-large-positive values are accepted, but they probably lead to an unwanted result. The default value is \default{1em}.
+This key may be used to change the \emph{horizontal} distance between the outermost niece(s) or nephew(s) and their parents.
+This key has no effect if only one nephew/niece is present.
+Note that both negative or too-large-positive values are accepted, but they probably lead to an unwanted result.
+The default value is \default{1em}.
 
 \intextmarginnote{\key{children outer space}:}
-This key may be used to change the \emph{horizontal} distance between the outermost children and their parents. This key has no effect is only one child is present. Note that both negative or too-large-positive values are accepted, but they probably lead to an unwanted result. The default value is \default{1em}.
+This key may be used to change the \emph{horizontal} distance between the outermost children and their parents.
+This key has no effect is only one child is present.
+Note that both negative or too-large-positive values are accepted, but they probably lead to an unwanted result.
+The default value is \default{1em}.
 
 \begin{center}\rule{0.5\textwidth}{1pt}\end{center}
 
@@ -241,7 +265,7 @@ to add a frame to your genogram.
 
 \begin{center}\rule{0.5\textwidth}{1pt}\end{center}
 
-\section{The code to produce \cref{fig:genogram} {\scriptsize(without printing commands)}}\label{sec:code}
+\section{The code to produce \cref{fig:genogram} {\scriptsize(without printing package commands)}}\label{sec:code}
 
 \marginlabel{\vspace{3.5mm} Black and white:}
 \begin{verbatim}
@@ -381,7 +405,7 @@ You can use something like
     }
 \end{verbatim}
 to see where the coordinate \texttt{gen@husband@father@below} is.
-\emph{If you know arrived here reading this section, you will know how to make use of this information.}
+\emph{If you arrived here reading this section, you will know how to make use of this information.}
 
 
 
